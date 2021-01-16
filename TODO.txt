@@ -3,12 +3,12 @@
 
 1) Вывод 
     - версии linux и ядра
-    - железо
-    - network interfaces
+    - железо(cpuinfo, )
+    \/ - network interfaces
 2) загрузка 
-    - CPU
+    \/ - CPU
     - GPU
-    - RAM
+    \/ - RAM
     - temp
 3) объем HDD/SSD
 4) вывод в log
