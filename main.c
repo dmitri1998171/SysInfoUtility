@@ -5,19 +5,14 @@
 
 
 #define N 50
-#define ECHOMAX 20
-
-int max_clnt, port;
-char *type_proto;
 
 struct mem {
-	char memTotal[N];	//
-	char memFree[N];	// ОЗУ
+	char memTotal[N];	// ОЗУ
 	char memAvail[N];	//
 };
 
 struct info {
-	char cpuavg[N];		  // Нагрузка процессора
+	char cpuavg[15];		  // Нагрузка процессора
 	struct mem mem;		  // ОЗУ
 }info;
 
@@ -26,6 +21,7 @@ struct sys_info {
     char kernel[N];       // Ядро
 	char net_int[N][N];	  // Сетевые интерфейсы
 	unsigned int count;	  // счетчик кол-ва сетев. инетерфейсов
+	char cpu[N*14];
 
 }sys_info;
 
@@ -71,11 +67,21 @@ void network_interaces() {
 
 void memory_info() {
 	char name1[] = "/proc/meminfo";
+	char str[N];
 	openFile(name1, 'r');
 	
-	fgets(info.mem.memTotal, N, fp);
-	fgets(info.mem.memFree, N, fp);
-	fgets(info.mem.memAvail, N, fp);
+	fgets(str, N, fp);	// Total
+	char *p = strtok(str," ");
+	p = strtok(NULL, " ");
+	strcpy(info.mem.memTotal, p);
+
+	fgets(str, N, fp);	// Free
+
+	fgets(str, N, fp);	// Available
+	char *d = strtok(str," ");
+	d = strtok(NULL, " ");
+	strcpy(info.mem.memAvail, p);
+
 	fclose(fp);
 }
 
@@ -83,7 +89,23 @@ void cpu_info() {
 	char name2[] = "/proc/loadavg";
 	openFile(name2, 'r');
 
-	fgets(info.cpuavg, N, fp);
+	fgets(info.cpuavg, 15, fp);
+	fclose(fp);
+
+	char name3[] = "/proc/cpuinfo";
+	char str[N*4];
+	openFile(name3, 'r');
+
+	while(!feof(fp)) {
+		fgets(str, N*4, fp);
+
+		if(strstr(str, "model name") != NULL ){
+			char *p = strtok(str, ":");
+			p = strtok(NULL, ":");
+			strcpy(sys_info.cpu, p);
+			break;
+		}
+	}
 	fclose(fp);
 }
 
@@ -99,23 +121,27 @@ void get_info() {
 }
 
 
+void current_values_output() {
+	printf("CPU avg: %s\n", info.cpuavg);
+	printf("GPU:\n");
+	printf("RAM: %s / %s\n", info.mem.memAvail, info.mem.memTotal);
+}
+
 void out(){
     printf("Version: %s\n", sys_info.version);
 
-    printf("Net Int.:        ");
+    printf("Network interfaces: ");
 	for(int i=0; i < sys_info.count; i++){	
 		printf("%s ", sys_info.net_int[i]);
 	}
 
-    printf("\n-------------------------------\n");
-
-	printf("%s", info.mem.memTotal);
-	printf("%s", info.mem.memFree);
-	printf("%s", info.mem.memAvail);
-
-	printf("CPU:\t%s", info.cpuavg);
+	printf("\nCPU: %s", sys_info.cpu);
+	printf("GPU: \n");
+	printf("RAM: %s\n", info.mem.memTotal);
 
     printf("\n-------------------------------\n");
+
+	current_values_output();
 
 }
 
@@ -133,7 +159,6 @@ void write_to_log() {
     fprintf(fp, "\n-------------------------------\n");
 
 	fprintf(fp, "%s", info.mem.memTotal);
-	fprintf(fp, "%s", info.mem.memFree);
 	fprintf(fp, "%s", info.mem.memAvail);
 
 	fprintf(fp, "CPU:\t%s", info.cpuavg);

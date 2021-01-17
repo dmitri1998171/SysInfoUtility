@@ -4,14 +4,20 @@
 1) Вывод 
     - версии linux и ядра
     - железо(cpuinfo, )
+        \/ 0) net int
+        \/ 1) cpu
+        2) GPU+resolution
+        3) RAM
+
     \/ - network interfaces
 2) загрузка 
     \/ - CPU
     - GPU
     \/ - RAM
+    - перевод RAM в Mb
     - temp
-3) объем HDD/SSD
-4) вывод в log
+    - объем HDD/SSD
+\/ 4) вывод в log
 5) ... в HTML
     - конвертер log to HTML
 6) вывод отдельных параметров по аргументам
