@@ -1,6 +1,15 @@
+
+	System information
+
 Version: Linux version 5.4.70-amd64-desktop (deepin@deepin-PC) 
-Net Int.:        enp0s3 lo 
+Network interfaces: enp0s3 lo 
+CPU:	GPU: 
+RAM: 3488 Mb
+Swap: 5118 Mb
+
 -------------------------------
-RAM: 1501 / 3488 Mb
-CPU:	0.14 0.21 0.25
--------------------------------
+
+CPU avg: 0.48 0.34 0.37
+GPU:
+RAM: 1927 / 3488 Mb
+Swap: 581 / 5118 Mb

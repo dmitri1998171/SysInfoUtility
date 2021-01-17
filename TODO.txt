@@ -2,25 +2,26 @@
         TODO
 
 1) Вывод 
-    - версии linux и ядра
-    - железо(cpuinfo, )
+    \/ - версии linux и ядра
+    \/ - network interfaces
+    - железо(cpuinfo, meminfo)
         \/ 0) net int
         \/ 1) cpu
+        \/   1.1) кол-во процов (cpu cores в proc/cpuinfo)
         2) GPU+resolution
         \/ 3) RAM
         \/ 4) swap
-    \/ - network interfaces
 2) загрузка 
     \/ - CPU
-    - GPU
+    - GPU       (dmesg | grep 'graphics memory')
     \/ - RAM
     \/ - swap
     \/ - перевод RAM в Mb
     - temp
-    - объем HDD/SSD
+    - объем HDD/SSD     (/proc/partitions)
 \/ 4) вывод в log
 5) ... в HTML
     - конвертер log to HTML
-6) вывод отдельных параметров по аргументам
+\/ 6) вывод отдельных параметров по аргументам
 7) отправка по интернет
 8) граф. режим (ncurses)
