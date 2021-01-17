@@ -19,45 +19,42 @@ struct mem {
 struct info {
 	char cpuavg[N];		  // Нагрузка процессора
 	struct mem mem;		  // ОЗУ
-};
+}info;
 
 struct sys_info {
     char version[N];      // Версия Линукс
     char kernel[N];       // Ядро
 	char net_int[N][N];	  // Сетевые интерфейсы
-	int count;			  // счетчик кол-ва сетев. инетерфейсов
+	unsigned int count;	  // счетчик кол-ва сетев. инетерфейсов
 
-};
+}sys_info;
 
 FILE *fp;
-struct info info;
-struct sys_info sys_info;
 
-void openFunc(char name[]){
-	if ((fp = fopen(name, "r")) == NULL){
+void openFile(char name[], char attr){
+	if ((fp = fopen(name, &attr)) == NULL){
 		printf("Не удалось открыть файл\n");
 		exit(-1);}
 }
 
 void version_info() {
     char ver[] = "/proc/version";
-    openFunc(ver);
+    openFile(ver, 'r');
 
     fgets(sys_info.version, N+5, fp);
     fclose(fp);
 }
 
 void kernel_info() {
-    fgets(sys_info.version, N+5, fp);
+    fgets(sys_info.version, N, fp);
     fclose(fp);
 }
 
 void network_interaces() {
-    /////////////////INTERFACES/////////////////////
 	system("rm ./tmp.txt && ls /sys/class/net >> ./tmp.txt");
 
 	char name0[] = "tmp.txt";
-	openFunc(name0);
+	openFile(name0, 'r');
 
         // очистка массива для перезаписи
     memset(sys_info.net_int[N], 0, sizeof(sys_info.net_int[N]));    
@@ -73,9 +70,8 @@ void network_interaces() {
 // ##########################################
 
 void memory_info() {
-    //////////////MEMORY////////////////////////////
 	char name1[] = "/proc/meminfo";
-	openFunc(name1);
+	openFile(name1, 'r');
 	
 	fgets(info.mem.memTotal, N, fp);
 	fgets(info.mem.memFree, N, fp);
@@ -84,9 +80,8 @@ void memory_info() {
 }
 
 void cpu_info() {
-    /////////////////CPU////////////////////////////
 	char name2[] = "/proc/loadavg";
-	openFunc(name2);
+	openFile(name2, 'r');
 
 	fgets(info.cpuavg, N, fp);
 	fclose(fp);
@@ -124,11 +119,36 @@ void out(){
 
 }
 
+void write_to_log() {
+	char filename[] = {"sysInfo.log"};
+
+	openFile(filename, 'w');
+	fprintf(fp, "Version: %s\n", sys_info.version);
+
+    fprintf(fp, "Net Int.:        ");
+	for(int i=0; i < sys_info.count; i++){	
+		fprintf(fp, "%s ", sys_info.net_int[i]);
+	}
+
+    fprintf(fp, "\n-------------------------------\n");
+
+	fprintf(fp, "%s", info.mem.memTotal);
+	fprintf(fp, "%s", info.mem.memFree);
+	fprintf(fp, "%s", info.mem.memAvail);
+
+	fprintf(fp, "CPU:\t%s", info.cpuavg);
+
+    fprintf(fp, "\n-------------------------------\n");
+
+	fclose(fp);
+}
+
 int main(void){
     printf("\n\tSystem information\n\n");
 
-    get_info();
-    out();
+    get_info();			// сбор инфы
+    out();				// вывод в консоль
+	write_to_log();		// запись в лог
 
     return 0;
 }
