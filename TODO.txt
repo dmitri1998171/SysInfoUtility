@@ -7,16 +7,15 @@
         \/ 0) net int
         \/ 1) cpu
         2) GPU+resolution
-        3) RAM
-        4) swap
-
+        \/ 3) RAM
+        \/ 4) swap
     \/ - network interfaces
 2) загрузка 
     \/ - CPU
     - GPU
     \/ - RAM
-    - swap
-    \/ - перевод RAM в Gb
+    \/ - swap
+    \/ - перевод RAM в Mb
     - temp
     - объем HDD/SSD
 \/ 4) вывод в log

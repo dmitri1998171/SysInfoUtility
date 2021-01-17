@@ -8,11 +8,13 @@
 struct mem {
 	int memTotal;	// Полный объем
 	int memAvail;	// Используется
+	int swapTotal;	// swap полный
+	int swapAvail;	// swap исп.
 };
 
 struct info {
 	char cpuavg[15];	  // Нагрузка процессора
-	struct mem mem;		  // ОЗУ
+	struct mem mem;		  // ОЗУ и swap
 }info;
 
 struct sys_info {
@@ -64,26 +66,36 @@ void network_interaces() {
 
 // ##########################################
 
-void memory_info() {
-	char name1[] = "/proc/meminfo";
-	char str[arr_size];
-	openFile(name1, 'r');
-	
-	fgets(str, arr_size, fp);	// Total
+char* parsing(char *str){
 	char *p = strtok(str," ");
 	p = strtok(NULL, " ");
-	info.mem.memTotal = atoi(p);
-	info.mem.memTotal = info.mem.memTotal / 1024; // перевод в Mb
-	
-	fgets(str, arr_size, fp);	// Free
+	return p;
+}
 
-	fgets(str, arr_size, fp);	// Available
-	char *d = strtok(str," ");
-	d = strtok(NULL, " ");
-	info.mem.memAvail = atoi(d);
-	info.mem.memAvail = info.mem.memAvail / 1024;
+void get_number_from_str(char* str, int* value) {
+	*value = atoi(str);
+	*value = *value / 1024; // перевод Kb->Mb
+}
 
-	fclose(fp);
+void mem_info(){
+    char name1[] = "/proc/meminfo";
+	char str[arr_size];
+
+    FILE *f = fopen(name1, "r");
+    while (fgets(str, arr_size, f)) {
+        if(strstr(str, "MemTotal"))
+			get_number_from_str(parsing(str), &info.mem.memTotal);
+        if(strstr(str, "MemAvailable"))
+			get_number_from_str(parsing(str), &info.mem.memAvail);
+        if(strstr(str, "SwapTotal"))
+			get_number_from_str(parsing(str), &info.mem.swapTotal);
+        if(strstr(str, "SwapFree")) {
+			int tmp = 0;
+			get_number_from_str(parsing(str), &tmp);
+			info.mem.swapAvail = info.mem.swapTotal - tmp;
+		}
+    }
+    fclose(f);
 }
 
 void cpu_info() {
@@ -117,7 +129,7 @@ void get_info() {
     kernel_info();
     network_interaces();
     
-    memory_info();
+	mem_info();
     cpu_info();
 }
 
@@ -125,6 +137,7 @@ void current_values_output() {
 	printf("CPU avg: %s\n", info.cpuavg);
 	printf("GPU:\n");
 	printf("RAM: %i / %i Mb\n", info.mem.memAvail, info.mem.memTotal);
+	printf("Swap: %i / %i Mb\n", info.mem.swapAvail, info.mem.swapTotal);
 }
 
 void out(){
@@ -138,6 +151,7 @@ void out(){
 	printf("\nCPU: %s", sys_info.cpu);
 	printf("GPU: \n");
 	printf("RAM: %i Mb\n", info.mem.memTotal);
+	printf("Swap: %i Mb\n", info.mem.swapTotal);
 
     printf("\n-------------------------------\n");
 

@@ -3,31 +3,36 @@
 #include <stdio.h>
 #include <string.h>
 
-int main(void) {
+
+void mem_info(){
     char name1[] = "/proc/meminfo";
-	char str[128];
     char *p, *d, *s, *a;
+	char str[128];
 
     FILE *f = fopen(name1, "r");
     while (fgets(str, 128, f)) {
         if(strstr(str, "MemTotal")){
-            strcpy(p, str);
-            printf("%s\n", p); }
+            p = str;
+            printf("%s\n", p); 
+        }
         if(strstr(str, "MemAvailable")){
-            strcpy(s, str);
-            printf("%s\n", d); }
-        // if(strstr(str, "SwapTotal")){
-        //     strcpy(d, str);
-        //     printf("%s\n", s); }
-        // if(strstr(str, "SwapFree")){
-        //     strcpy(a, str);
-        //     printf("%s\n", a); }
-
-        // if(feof)
-        //     break;
+            d = str;
+            printf("%s\n", d); 
+        }
+        if(strstr(str, "SwapTotal")){
+            s = str;
+            printf("%s\n", s); 
+        }
+        if(strstr(str, "SwapFree")){
+            a = str;
+            printf("%s\n", a); 
+        }
     }
-
-
     fclose(f);
+}
+
+int main(void) {
+    mem_info();
+
     return 0;
 }
