@@ -8,13 +8,15 @@
         \/ 1) cpu
         2) GPU+resolution
         3) RAM
+        4) swap
 
     \/ - network interfaces
 2) загрузка 
     \/ - CPU
     - GPU
     \/ - RAM
-    - перевод RAM в Mb
+    - swap
+    \/ - перевод RAM в Gb
     - temp
     - объем HDD/SSD
 \/ 4) вывод в log

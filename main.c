@@ -3,25 +3,24 @@
 #include <string.h>
 #include <unistd.h>
 
-
-#define N 50
+#define arr_size 50
 
 struct mem {
-	char memTotal[N];	// ОЗУ
-	char memAvail[N];	//
+	int memTotal;	// Полный объем
+	int memAvail;	// Используется
 };
 
 struct info {
-	char cpuavg[15];		  // Нагрузка процессора
+	char cpuavg[15];	  // Нагрузка процессора
 	struct mem mem;		  // ОЗУ
 }info;
 
 struct sys_info {
-    char version[N];      // Версия Линукс
-    char kernel[N];       // Ядро
-	char net_int[N][N];	  // Сетевые интерфейсы
+    char version[arr_size];      // Версия Линукс
+    char kernel[arr_size];       // Ядро
+	char net_int[arr_size][arr_size];	  // Сетевые интерфейсы
 	unsigned int count;	  // счетчик кол-ва сетев. инетерфейсов
-	char cpu[N*14];
+	char cpu[arr_size*14];
 
 }sys_info;
 
@@ -37,12 +36,12 @@ void version_info() {
     char ver[] = "/proc/version";
     openFile(ver, 'r');
 
-    fgets(sys_info.version, N+5, fp);
+    fgets(sys_info.version, arr_size+5, fp);
     fclose(fp);
 }
 
 void kernel_info() {
-    fgets(sys_info.version, N, fp);
+    fgets(sys_info.version, arr_size, fp);
     fclose(fp);
 }
 
@@ -53,7 +52,7 @@ void network_interaces() {
 	openFile(name0, 'r');
 
         // очистка массива для перезаписи
-    memset(sys_info.net_int[N], 0, sizeof(sys_info.net_int[N]));    
+    memset(sys_info.net_int[arr_size], 0, sizeof(sys_info.net_int[arr_size]));    
     
 	while (!feof(fp)){
 		fscanf(fp, "%s", sys_info.net_int[sys_info.count]);
@@ -67,20 +66,22 @@ void network_interaces() {
 
 void memory_info() {
 	char name1[] = "/proc/meminfo";
-	char str[N];
+	char str[arr_size];
 	openFile(name1, 'r');
 	
-	fgets(str, N, fp);	// Total
+	fgets(str, arr_size, fp);	// Total
 	char *p = strtok(str," ");
 	p = strtok(NULL, " ");
-	strcpy(info.mem.memTotal, p);
+	info.mem.memTotal = atoi(p);
+	info.mem.memTotal = info.mem.memTotal / 1024; // перевод в Mb
+	
+	fgets(str, arr_size, fp);	// Free
 
-	fgets(str, N, fp);	// Free
-
-	fgets(str, N, fp);	// Available
+	fgets(str, arr_size, fp);	// Available
 	char *d = strtok(str," ");
 	d = strtok(NULL, " ");
-	strcpy(info.mem.memAvail, p);
+	info.mem.memAvail = atoi(d);
+	info.mem.memAvail = info.mem.memAvail / 1024;
 
 	fclose(fp);
 }
@@ -93,11 +94,11 @@ void cpu_info() {
 	fclose(fp);
 
 	char name3[] = "/proc/cpuinfo";
-	char str[N*4];
+	char str[arr_size*4];
 	openFile(name3, 'r');
 
 	while(!feof(fp)) {
-		fgets(str, N*4, fp);
+		fgets(str, arr_size*4, fp);
 
 		if(strstr(str, "model name") != NULL ){
 			char *p = strtok(str, ":");
@@ -120,11 +121,10 @@ void get_info() {
     cpu_info();
 }
 
-
 void current_values_output() {
 	printf("CPU avg: %s\n", info.cpuavg);
 	printf("GPU:\n");
-	printf("RAM: %s / %s\n", info.mem.memAvail, info.mem.memTotal);
+	printf("RAM: %i / %i Mb\n", info.mem.memAvail, info.mem.memTotal);
 }
 
 void out(){
@@ -137,7 +137,7 @@ void out(){
 
 	printf("\nCPU: %s", sys_info.cpu);
 	printf("GPU: \n");
-	printf("RAM: %s\n", info.mem.memTotal);
+	printf("RAM: %i Mb\n", info.mem.memTotal);
 
     printf("\n-------------------------------\n");
 
@@ -158,9 +158,7 @@ void write_to_log() {
 
     fprintf(fp, "\n-------------------------------\n");
 
-	fprintf(fp, "%s", info.mem.memTotal);
-	fprintf(fp, "%s", info.mem.memAvail);
-
+	fprintf(fp, "RAM: %i / %i Mb\n", info.mem.memAvail, info.mem.memTotal);
 	fprintf(fp, "CPU:\t%s", info.cpuavg);
 
     fprintf(fp, "\n-------------------------------\n");
