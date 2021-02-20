@@ -161,18 +161,16 @@ void write_to_log() {
 	char filename[] = {"sysInfo.log"};
 	openFile(filename, 'w');
 
-    fprintf(fp, "\n\tSystem information\n\n");
 	fprintf(fp, "Version: %s\n", sys_info.version);
     fprintf(fp, "Network interfaces: ");
 	
 	for(int i=0; i < sys_info.count; i++)	
 		fprintf(fp, "%s ", sys_info.net_int[i]);
 
-	fprintf(fp, "\nCPU:\t%s", sys_info.cpu);
+	fprintf(fp, "\nCPU:\t%s\n", sys_info.cpu);
 	fprintf(fp, "GPU: \n");
 	fprintf(fp, "RAM: %i Mb\n", info.mem.memTotal);
 	fprintf(fp, "Swap: %i Mb\n", info.mem.swapTotal);
-    fprintf(fp, "\n-------------------------------\n\n");
 
 	fprintf(fp, "CPU avg: %s\n", info.cpuavg);
 	fprintf(fp, "GPU:\n");
@@ -182,23 +180,138 @@ void write_to_log() {
 	fclose(fp);
 }
 
-int main(int argc, char *argv[]) {
-	if(argc == 1){
-		get_hard_info();			// сбор хар-к ПК
-		get_sys_info();				// сбор текущих значений
-		out();						// Вывод хар-к ПК
-		printf("\n-------------------------------\n\n");
-		current_values_output();	// Вывод текущих значений
-	}
+void generate_html() {
+	char str[ARR_SIZE];
 
+    FILE *fsrc, *fdst;
+    if ((fsrc = fopen("sysInfo.log", "r")) == NULL) {
+		perror("fopen"); exit(-1); }
+    if ((fdst = fopen("logfile.html", "w")) == NULL) {
+		perror("fopen"); exit(-1); }
+
+    fprintf(fdst, "<html>\n");
+	fprintf(fdst, "\t<head>\n");
+	fprintf(fdst, "\t\t<title>logfile.html</title>\n");
+	fprintf(fdst, "\t\t<link rel=\"stylesheet\" href=\"style.css\"></link>\n");
+	fprintf(fdst, "\t</head>\n");
+
+    fprintf(fdst, "\t<body>\n");
+
+	fprintf(fdst, "\t\t<div class=\"bg_block\">\n");
+	fprintf(fdst, "\t\t\t<div class=\"block\">\n");
+	fprintf(fdst, "\t\t\t\t<div class=\"subblock\" style=\"padding-bottom: 14px;\">\n");
+	
+    while(fgets(str, ARR_SIZE+10, fsrc)) {
+		if(strstr(str, "CPU avg:")){
+			fprintf(fdst, "\t\t\t\t</div>\n");
+			fprintf(fdst, "\t\t\t\t<div class=\"subblock\"><br></div>\n");
+			fprintf(fdst, "\t\t\t\t<div class=\"subblock\">\n");
+		}
+        fprintf(fdst, "\t\t\t\t\t<br>%s", str);
+    }
+
+    fprintf(fdst, "\t\t\t\t</div>\n");
+    fprintf(fdst, "\t\t\t</div>\n");
+	fprintf(fdst, "\t\t\t<div class=\"block\">\n");
+
+//	shedule
+
+    fprintf(fdst, "\t\t\t\t<div class=\"subblock\">\n");
+    fprintf(fdst,  "\t\t\t\t<table  width=\"100%\">\n");
+    fprintf(fdst,   "\t\t\t\t\t<tr> \n");
+    fprintf(fdst,    "\t\t\t\t\t<td> <hr> </td>\n");
+
+// строка с изменяемыми параметрами
+    fprintf(fdst,     "\t\t\t\t\t<td width=\"25%\" align=\"center\"> HDD/SSD load </td>\n");
+    
+	fprintf(fdst,      "\t\t\t\t\t</tr>\n");
+    fprintf(fdst,     "\t\t\t\t</table>\n");
+    fprintf(fdst,  "\t\t\t\t</div>\n");
+
+//
+
+    fprintf(fdst,  "\t\t\t</div>\n");
+    fprintf(fdst,  "\t\t</div>\n");
+
+
+	    /*
+        <div class=\"subblock\">
+            <table  width=\"100%\">
+                <tr> 
+                    <td> <hr> </td>
+                    <td width=\"25%\" align=\"center\"> CPU t*C </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="subblock">
+            <table  width=\"100%\">
+                <tr> 
+                    <td> <hr> </td>
+                    <td width=\"25%\" align=\"center\"> GPU t*C </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class=\"subblock\"><br></div>
+
+        <div class=\"subblock\">
+            <table  width=\"100%\">
+                <tr> 
+                    <td> <hr> </td>
+                    <td width=\"25%\" align=\"center\"> CPU avg. </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class=\"subblock\">
+            <table  width=\"100%\">
+                <tr> 
+                    <td> <hr> </td>
+                    <td width=\"25%\" align=\"center\"> GPU </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class=\"subblock\">
+            <table  width=\"100%\">
+                <tr> 
+                    <td> <hr> </td>
+                    <td width=\"25%\" align=\"center\"> Memory </td>
+                </tr>
+            </table>
+        </div> 
+    </div>");
+*/
+
+    fprintf(fdst, "\t</body>\n");
+    fprintf(fdst, "</html>");
+
+    fclose(fsrc);
+    fclose(fdst);
+}
+
+void full_output() {
+	get_hard_info();			// сбор хар-к ПК
+	get_sys_info();				// сбор текущих значений
+	out();						// Вывод хар-к ПК
+	printf("\n-------------------------------\n\n");
+	current_values_output();	// Вывод текущих значений
+}
+
+int main(int argc, char *argv[]) {
+	if(argc == 1)
+		full_output();
+	
 	int res = 0;
-	while ((res = getopt(argc,argv,"wsl")) != -1) {
+	while ((res = getopt(argc,argv,"wslh")) != -1) {
 		switch(res) {
 			case 'w': { get_hard_info(); out(); break; }	// Вывод хар-к ПК
 			case 's': { get_sys_info(); current_values_output(); break; }	// Вывод текущ. знач.
-			case 'l': { write_to_log(); break; }	// запись в лог
-			case '?':
-			case 'h': { printf("\n Usage: %s [OPTION]\n\n -w, --hardware  print hardware information\n -s, --system    print system information\n -l, --log       output in \'sysInfo.log\' file\n -h, --help      print this help\n\n By default, without options, the utility displays hardware and system information\n\n", argv[0]); break; }
+			case 'l': { full_output(); write_to_log(); break; }	// запись в лог
+			case 'h': { full_output(); write_to_log(); generate_html(); break; }	// запись в html
+			
+			case '?': { printf("\n Usage: %s [OPTION]\n\n -w, --hardware  print hardware information\n -s, --system    print system information\n -l, --log       output to \'sysInfo.log\' file\n -h, --html\t output to html\n -?\t\t print this help\n\n By default, without options, the utility displays hardware and system information\n\n", argv[0]); break; }
         }
 	}
 
