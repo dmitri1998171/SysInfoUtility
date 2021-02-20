@@ -15,6 +15,7 @@ struct mem {
 
 struct info {
 	char cpuavg[15];	  // Нагрузка процессора
+	int gpuavg;			  // Объем видеопамяти
 	struct mem mem;		  // ОЗУ и swap
 }info;
 
@@ -42,7 +43,8 @@ char* parsing(char *str, char *symbol) {
 
 void get_number_from_str(char* str, int* value) {
 	*value = atoi(str);
-	*value = *value / 1024; // перевод Kb->Mb
+	*value = *value / 1000; // перевод Kb->Mb			??? 1000 или 1024
+	// https://habr.com/ru/post/193256/
 }
 
 // ##### HARD INFO ########################
@@ -128,16 +130,33 @@ void mem_info() {
     fclose(fp);
 }
 
+void gpu_sys_info() {
+	char str[73];	
+	FILE* f;
+
+    f = popen("dmesg | grep \'graphics memory\'", "r");
+    if (f) 
+		fgets(str, 73, f);
+	pclose(f);
+    	
+	char *value = strstr(str, "memory: ");
+	value = strstr(value, " ");
+	value = strtok(value, " ");
+
+	info.gpuavg = atoi(value) / 1024;
+}
+ 
 void get_sys_info() {
     cpu_sys_info();
 	mem_info();
+	gpu_sys_info();
 }
 
 // ##### OUTPUT #############################
 
 void current_values_output() {
 	printf("CPU avg: %s\n", info.cpuavg);
-	printf("GPU:\n");
+	printf("GPU: %i Mb\n", info.gpuavg);
 	printf("RAM: %i / %i Mb\n", info.mem.memAvail, info.mem.memTotal);
 	printf("Swap: %i / %i Mb\n", info.mem.swapAvail, info.mem.swapTotal);
 }
