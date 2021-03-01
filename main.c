@@ -13,21 +13,42 @@ struct mem {
 	int swapAvail;	// swap исп.
 };
 
-struct info {
-	char cpuavg[15];	  // Нагрузка процессора
+struct sys_info {
+	float cpuavg;	  // Нагрузка процессора
 	int gpuavg;			  // Объем видеопамяти
 	struct mem mem;		  // ОЗУ и swap
-}info;
-
-struct sys_info {
-    char version[ARR_SIZE];      // Версия ядра линукс
-	char net_int[ARR_SIZE][ARR_SIZE]; // Сетевые интерфейсы
-	char cpu[ARR_SIZE];			 		 // Процессор
-	int cpu_cores;		 	 // Кол-во ядер
-	unsigned int count;	  // счетчик кол-ва сетев. инетерфейсов
 }sys_info;
 
+struct hard_info {
+    char version[ARR_SIZE];      	  // Версия ядра линукс
+	char net_int[ARR_SIZE][ARR_SIZE]; // Сетевые интерфейсы
+	char cpu[ARR_SIZE];			 	  // Процессор
+	int cpu_cores;		 	 		  // Кол-во ядер
+	unsigned int count;	  			  // кол-во сетев. инетерфейсов
+}hard_info;
+
+struct graph_strings {
+	char string_name[6][15];		  // Имена строк для граф. режимов
+	float string_load[6];				  // Загруженность 
+}graph_strings;
+
 FILE *fp;
+
+void graph_strings_Func() {
+	strcpy(graph_strings.string_name[0], "HDD/SSD load");
+	strcpy(graph_strings.string_name[1], "CPU t*C");
+	strcpy(graph_strings.string_name[2], "GPU t*C");
+	strcpy(graph_strings.string_name[3], "CPU avg");
+	strcpy(graph_strings.string_name[4], "GPU load");
+	strcpy(graph_strings.string_name[5], "Memory load");
+
+	// graph_strings.string_load[0] = 
+	// graph_strings.string_load[0] = 
+	// graph_strings.string_load[0] = 
+	graph_strings.string_load[3] = (sys_info.cpuavg / hard_info.cpu_cores) * 100;
+	// graph_strings.string_load[0] = 
+	graph_strings.string_load[5] = sys_info.gpuavg / 10;
+}
 
 void openFile(char name[], char attr) {
 	if ((fp = fopen(name, &attr)) == NULL){
@@ -52,7 +73,7 @@ void get_number_from_str(char* str, int* value) {
 void version_info() {
     char ver[] = "/proc/version";
     openFile(ver, 'r');
-    fgets(sys_info.version, ARR_SIZE, fp);
+    fgets(hard_info.version, ARR_SIZE-14, fp);
     fclose(fp);
 }
 
@@ -63,14 +84,14 @@ void network_interaces() {
 	openFile(name0, 'r');
 
         // очистка массива для перезаписи
-    memset(sys_info.net_int[ARR_SIZE], 0, ARR_SIZE);    
+    memset(hard_info.net_int[ARR_SIZE], 0, ARR_SIZE);    
     
 	while (!feof(fp)){
-		fscanf(fp, "%s", sys_info.net_int[sys_info.count]);
-		sys_info.count++;
+		fscanf(fp, "%s", hard_info.net_int[hard_info.count]);
+		hard_info.count++;
 	}
 	// исключает ошибку feof - дублирует последнюю строку
-    sys_info.count -= 1;
+    hard_info.count -= 1;
 	fclose(fp);
 	system("rm ./tmp.txt");
 }
@@ -83,11 +104,11 @@ void cpu_hard_info() {
 	while(fgets(str, ARR_SIZE, fp)) {
 		if(strstr(str, "model name")) {
 			char *d = parsing(str, ":");
-			strcpy(sys_info.cpu, d);
+			strcpy(hard_info.cpu, d);
 		}
 		if(strstr(str, "cpu cores")) {
 			char *p = parsing(str, ":");
-			sys_info.cpu_cores = atoi(p);
+			hard_info.cpu_cores = atoi(p);
 			break;
 		}
 	}
@@ -104,9 +125,14 @@ void get_hard_info() {
 
 void cpu_sys_info() {
 	char name2[] = "/proc/loadavg";
+	char str[15];
+
 	openFile(name2, 'r');
-	fgets(info.cpuavg, 15, fp);
+	fgets(str, 15, fp);
 	fclose(fp);
+
+	char *ptr = strtok(str, " ");
+     sys_info.cpuavg = atof(ptr);
 }
 
 void mem_info() {
@@ -116,15 +142,15 @@ void mem_info() {
     openFile(name1, 'r');
     while (fgets(str, ARR_SIZE, fp)) {
         if(strstr(str, "MemTotal"))
-			get_number_from_str(parsing(str, " "), &info.mem.memTotal);
+			get_number_from_str(parsing(str, " "), &sys_info.mem.memTotal);
         if(strstr(str, "MemAvailable"))
-			get_number_from_str(parsing(str, " "), &info.mem.memAvail);
+			get_number_from_str(parsing(str, " "), &sys_info.mem.memAvail);
         if(strstr(str, "SwapTotal"))
-			get_number_from_str(parsing(str, " "), &info.mem.swapTotal);
+			get_number_from_str(parsing(str, " "), &sys_info.mem.swapTotal);
         if(strstr(str, "SwapFree")) {
 			int tmp = 0;
 			get_number_from_str(parsing(str, " "), &tmp);
-			info.mem.swapAvail = info.mem.swapTotal - tmp;
+			sys_info.mem.swapAvail = sys_info.mem.swapTotal - tmp;
 		}
     }
     fclose(fp);
@@ -132,9 +158,8 @@ void mem_info() {
 
 void gpu_sys_info() {
 	char str[73];	
-	FILE* f;
 
-    f = popen("dmesg | grep \'graphics memory\'", "r");
+	FILE* f = popen("dmesg | grep \'graphics memory\'", "r");
     if (f) 
 		fgets(str, 73, f);
 	pclose(f);
@@ -143,9 +168,10 @@ void gpu_sys_info() {
 	value = strstr(value, " ");
 	value = strtok(value, " ");
 
-	info.gpuavg = atoi(value) / 1024;
+	sys_info.gpuavg = atoi(value) / 1000 / 13.9;	// ???
+	// https://habr.com/ru/post/193256/
 }
- 
+
 void get_sys_info() {
     cpu_sys_info();
 	mem_info();
@@ -155,54 +181,56 @@ void get_sys_info() {
 // ##### OUTPUT #############################
 
 void current_values_output() {
-	printf("CPU avg: %s\n", info.cpuavg);
-	printf("GPU: %i Mb\n", info.gpuavg);
-	printf("RAM: %i / %i Mb\n", info.mem.memAvail, info.mem.memTotal);
-	printf("Swap: %i / %i Mb\n", info.mem.swapAvail, info.mem.swapTotal);
+	printf("CPU avg: %.2f\n", sys_info.cpuavg);
+	printf("GPU: %i Mb\n", sys_info.gpuavg);
+	printf("RAM: %i / %i Mb\n", sys_info.mem.memAvail, sys_info.mem.memTotal);
+	printf("Swap: %i / %i Mb\n", sys_info.mem.swapAvail, sys_info.mem.swapTotal);
 }
 
 void out() {
-    printf("\n\tSystem information\n\n");
-    printf("Version: %s\n", sys_info.version);
+    printf("Version: %s\n", hard_info.version);
     printf("Network interfaces: ");
 	
-	for(int i=0; i < sys_info.count; i++)	
-		printf("%s ", sys_info.net_int[i]);
+	for(int i=0; i < hard_info.count; i++)	
+		printf("%s ", hard_info.net_int[i]);
 	
-	printf("\nCPU: %s\n", sys_info.cpu);
-	printf("CPU CORES: %i\n", sys_info.cpu_cores);
+	printf("\nCPU: %s\n", hard_info.cpu);
+	printf("CPU CORES: %i\n", hard_info.cpu_cores);
 	printf("GPU: \n");
-	printf("RAM: %i Mb\n", info.mem.memTotal);
-	printf("Swap: %i Mb\n", info.mem.swapTotal);
+	printf("RAM: %i Mb\n", sys_info.mem.memTotal);
+	printf("Swap: %i Mb\n", sys_info.mem.swapTotal);
 }
 
 void write_to_log() {
 	char filename[] = {"sysInfo.log"};
 	openFile(filename, 'w');
 
-	fprintf(fp, "Version: %s\n", sys_info.version);
+	fprintf(fp, "Version: %s\n", hard_info.version);
     fprintf(fp, "Network interfaces: ");
 	
-	for(int i=0; i < sys_info.count; i++)	
-		fprintf(fp, "%s ", sys_info.net_int[i]);
+	for(int i = 0; i < hard_info.count; i++)	
+		fprintf(fp, "%s ", hard_info.net_int[i]);
 
-	fprintf(fp, "\nCPU:\t%s\n", sys_info.cpu);
+	fprintf(fp, "\nCPU:\t%s\n", hard_info.cpu);
+	fprintf(fp, "CPU CORES:\t%i\n", hard_info.cpu_cores);
 	fprintf(fp, "GPU: \n");
-	fprintf(fp, "RAM: %i Mb\n", info.mem.memTotal);
-	fprintf(fp, "Swap: %i Mb\n", info.mem.swapTotal);
+	fprintf(fp, "RAM: %i Mb\n", sys_info.mem.memTotal);
+	fprintf(fp, "Swap: %i Mb\n", sys_info.mem.swapTotal);
 
-	fprintf(fp, "CPU avg: %s\n", info.cpuavg);
+	fprintf(fp, "CPU avg: %.2f\n", sys_info.cpuavg);
 	fprintf(fp, "GPU:\n");
-	fprintf(fp, "RAM: %i / %i Mb\n", info.mem.memAvail, info.mem.memTotal);
-	fprintf(fp, "Swap: %i / %i Mb\n", info.mem.swapAvail, info.mem.swapTotal);
+	fprintf(fp, "RAM: %i / %i Mb\n", sys_info.mem.memAvail, sys_info.mem.memTotal);
+	fprintf(fp, "Swap: %i / %i Mb\n", sys_info.mem.swapAvail, sys_info.mem.swapTotal);
 
 	fclose(fp);
 }
 
 void generate_html() {
 	char str[ARR_SIZE];
-
     FILE *fsrc, *fdst;
+
+	graph_strings_Func();
+
     if ((fsrc = fopen("sysInfo.log", "r")) == NULL) {
 		perror("fopen"); exit(-1); }
     if ((fdst = fopen("logfile.html", "w")) == NULL) {
@@ -213,96 +241,40 @@ void generate_html() {
 	fprintf(fdst, "\t\t<title>logfile.html</title>\n");
 	fprintf(fdst, "\t\t<link rel=\"stylesheet\" href=\"style.css\"></link>\n");
 	fprintf(fdst, "\t</head>\n");
-
     fprintf(fdst, "\t<body>\n");
-
 	fprintf(fdst, "\t\t<div class=\"bg_block\">\n");
 	fprintf(fdst, "\t\t\t<div class=\"block\">\n");
 	fprintf(fdst, "\t\t\t\t<div class=\"subblock\" style=\"padding-bottom: 14px;\">\n");
 	
-    while(fgets(str, ARR_SIZE+10, fsrc)) {
-		if(strstr(str, "CPU avg:")){
+    while(fgets(str, ARR_SIZE, fsrc)) {
+		if(strstr(str, "CPU avg:")) { // Отделение текущ. инфы в отдельный блок
 			fprintf(fdst, "\t\t\t\t</div>\n");
 			fprintf(fdst, "\t\t\t\t<div class=\"subblock\"><br></div>\n");
 			fprintf(fdst, "\t\t\t\t<div class=\"subblock\">\n");
 		}
         fprintf(fdst, "\t\t\t\t\t<br>%s", str);
     }
-
     fprintf(fdst, "\t\t\t\t</div>\n");
     fprintf(fdst, "\t\t\t</div>\n");
 	fprintf(fdst, "\t\t\t<div class=\"block\">\n");
 
-//	shedule
+	for(int i = 0; i < 6; i++) {
+		if(i == 3)
+        	fprintf(fdst, "<div class=\"subblock\"><br></div>\n");
 
-    fprintf(fdst, "\t\t\t\t<div class=\"subblock\">\n");
-    fprintf(fdst,  "\t\t\t\t<table  width=\"100%\">\n");
-    fprintf(fdst,   "\t\t\t\t\t<tr> \n");
-    fprintf(fdst,    "\t\t\t\t\t<td> <hr> </td>\n");
+		fprintf(fdst, "\t\t\t\t<div class=\"subblock\">\n");
+		fprintf(fdst, "\t\t\t\t<table  width=\"100%\">\n");
+		fprintf(fdst, "\t\t\t\t\t<tr>\n");
 
-// строка с изменяемыми параметрами
-    fprintf(fdst,     "\t\t\t\t\t<td width=\"25%\" align=\"center\"> HDD/SSD load </td>\n");
-    
-	fprintf(fdst,      "\t\t\t\t\t</tr>\n");
-    fprintf(fdst,     "\t\t\t\t</table>\n");
-    fprintf(fdst,  "\t\t\t\t</div>\n");
-
-//
-
-    fprintf(fdst,  "\t\t\t</div>\n");
-    fprintf(fdst,  "\t\t</div>\n");
-
-
-	    /*
-        <div class=\"subblock\">
-            <table  width=\"100%\">
-                <tr> 
-                    <td> <hr> </td>
-                    <td width=\"25%\" align=\"center\"> CPU t*C </td>
-                </tr>
-            </table>
-        </div>
-
-        <div class="subblock">
-            <table  width=\"100%\">
-                <tr> 
-                    <td> <hr> </td>
-                    <td width=\"25%\" align=\"center\"> GPU t*C </td>
-                </tr>
-            </table>
-        </div>
-
-        <div class=\"subblock\"><br></div>
-
-        <div class=\"subblock\">
-            <table  width=\"100%\">
-                <tr> 
-                    <td> <hr> </td>
-                    <td width=\"25%\" align=\"center\"> CPU avg. </td>
-                </tr>
-            </table>
-        </div>
-
-        <div class=\"subblock\">
-            <table  width=\"100%\">
-                <tr> 
-                    <td> <hr> </td>
-                    <td width=\"25%\" align=\"center\"> GPU </td>
-                </tr>
-            </table>
-        </div>
-
-        <div class=\"subblock\">
-            <table  width=\"100%\">
-                <tr> 
-                    <td> <hr> </td>
-                    <td width=\"25%\" align=\"center\"> Memory </td>
-                </tr>
-            </table>
-        </div> 
-    </div>");
-*/
-
+		fprintf(fdst, "\t\t\t\t\t<td class=\"td_line\" width=\"80%\"> <hr style=\"width: %f%;\"> </td>\n", graph_strings.string_load[i]);
+		fprintf(fdst, "\t\t\t\t\t<td align=\"center\"> %s </td>\n", graph_strings.string_name[i]);
+		
+		fprintf(fdst, "\t\t\t\t\t</tr>\n");
+		fprintf(fdst, "\t\t\t\t</table>\n");
+		fprintf(fdst, "\t\t\t\t</div>\n");
+	}
+    fprintf(fdst, "\t\t\t</div>\n");
+    fprintf(fdst, "\t\t</div>\n");
     fprintf(fdst, "\t</body>\n");
     fprintf(fdst, "</html>");
 
@@ -313,6 +285,8 @@ void generate_html() {
 void full_output() {
 	get_hard_info();			// сбор хар-к ПК
 	get_sys_info();				// сбор текущих значений
+    
+	printf("\n\tSystem information\n\n");
 	out();						// Вывод хар-к ПК
 	printf("\n-------------------------------\n\n");
 	current_values_output();	// Вывод текущих значений
@@ -321,17 +295,18 @@ void full_output() {
 int main(int argc, char *argv[]) {
 	if(argc == 1)
 		full_output();
-	
-	int res = 0;
-	while ((res = getopt(argc,argv,"wslh")) != -1) {
-		switch(res) {
-			case 'w': { get_hard_info(); out(); break; }	// Вывод хар-к ПК
-			case 's': { get_sys_info(); current_values_output(); break; }	// Вывод текущ. знач.
-			case 'l': { full_output(); write_to_log(); break; }	// запись в лог
-			case 'h': { full_output(); write_to_log(); generate_html(); break; }	// запись в html
-			
-			case '?': { printf("\n Usage: %s [OPTION]\n\n -w, --hardware  print hardware information\n -s, --system    print system information\n -l, --log       output to \'sysInfo.log\' file\n -h, --html\t output to html\n -?\t\t print this help\n\n By default, without options, the utility displays hardware and system information\n\n", argv[0]); break; }
-        }
+	else {
+		int res = 0;
+		while ((res = getopt(argc,argv,"wslh")) != -1) {
+			switch(res) {
+				case 'w': { get_hard_info(); out(); break; }	// Вывод хар-к ПК
+				case 's': { get_sys_info(); current_values_output(); break; }	// Вывод текущ. знач.
+				case 'l': { full_output(); write_to_log(); break; }	// запись в лог
+				case 'h': { full_output(); write_to_log(); generate_html(); break; }	// запись в html
+				
+				case '?': { printf("\n Usage: %s [OPTION]\n\n -w, --hardware  print hardware information\n -s, --system    print system information\n -l, --log       output to \'sysInfo.log\' file\n -h, --html\t output to html\n -?\t\t print this help\n\n By default, without options, the utility displays hardware and system information\n\n", argv[0]); break; }
+			}
+		}
 	}
 
     return 0;

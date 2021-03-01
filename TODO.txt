@@ -8,16 +8,17 @@
         \/ 0) net int
         \/ 1) cpu
         \/   1.1) кол-во процов (cpu cores в proc/cpuinfo)
-        2) GPU+resolution
+        2) GPU      (/sys/class/graphics/fb0/name)
+        2.5) resolution (/sys/class/graphics/fb0/modes)
         \/ 3) RAM
         \/ 4) swap
 2) загрузка 
     \/ - CPU
-    - GPU       (dmesg | grep 'graphics memory')
+    \/ - GPU       (dmesg | grep 'graphics memory')
     \/ - RAM
     \/ - swap
     \/ - перевод RAM в Mb
-    - temp
+    - temp          (обернуть lm-sensors)
     - объем HDD/SSD     (/proc/partitions)
 \/ 4) вывод в log
 5) ... в HTML
@@ -27,3 +28,10 @@
         6.1) обработка длинных опций
 7) отправка по интернет
 8) граф. режим (ncurses)
+
+*) оптимизация
+    - разобраться с таблицой приставок
+        https://habr.com/ru/post/193256/
+	- передать FILE *fp в ф-ии
+    - утечки памяти (valgrind)
+    - демонизация
