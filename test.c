@@ -1,33 +1,42 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
-#include <string.h>
+#include <getopt.h>
 
-#define ARR_SIZE 50
+static struct option long_opt[] = {
+				{"help", 0, 0, 'h'},
+				{"config", 1, 0, 'c'},
+				{0,0,0,0}
+};
 
-FILE *fp;
-
-void openFile(char name[], char attr) {
-	if ((fp = fopen(name, &attr)) == NULL){
-		printf("Не удалось открыть файл\n");
-		exit(-1);}
+void usage(char *name)
+{
+printf("usage: %s\n\t-h this message\n\t-c [config file]\n\t--help this message\n\t--config=config_file\n", name);
+return;
 }
-
-void cpu_sys_info() {
-	char name2[] = "/proc/loadavg";
-	char str[ARR_SIZE];
-	
-    openFile(name2, 'r');
-	fgets(str, 15, fp);
-	printf("%s\n", str);
-	fclose(fp);
-
-     char *ptr = strtok(str, " ");
-     printf("%.2f\n", atof(ptr));
+ 
+int main (int argc, char *argv[])
+{
+int c;
+int optIdx;
+while (1){
+ 
+ if((c = getopt_long(argc, argv, "c:h", long_opt, &optIdx)) == -1)
+  break;
+ switch( c ){
+     case 'h':
+         usage(argv[0]);
+         return(-1);
+    
+     case 'c':
+         printf("option 'c' selected, filename: %s\n", optarg);
+         return(1);
+         
+     default:
+         usage(argv[0]);
+         return(-1);
+  }
 }
-
-int main(){
-    cpu_sys_info();
-
-    return 0;
+ 
+return(0);
 }

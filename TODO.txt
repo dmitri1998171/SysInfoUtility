@@ -9,7 +9,7 @@
         \/ 1) cpu
         \/   1.1) кол-во процов (cpu cores в proc/cpuinfo)
         2) GPU      (/sys/class/graphics/fb0/name)
-        2.5) resolution (/sys/class/graphics/fb0/modes)
+            - resolution (/sys/class/graphics/fb0/modes)
         \/ 3) RAM
         \/ 4) swap
 2) загрузка 
@@ -21,11 +21,11 @@
     - temp          (обернуть lm-sensors)
     - объем HDD/SSD     (/proc/partitions)
 \/ 4) вывод в log
-5) ... в HTML
+\/ 5) ... в HTML
     \/ - конвертер log to HTML
-    - шаблон для ползунков
+    \/ - шаблон для ползунков
 \/ 6) вывод отдельных параметров по аргументам
-        6.1) обработка длинных опций
+       \/ - обработка длинных опций
 7) отправка по интернет
 8) граф. режим (ncurses)
 

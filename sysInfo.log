@@ -5,7 +5,7 @@ CPU CORES:	4
 GPU: 
 RAM: 3571 Mb
 Swap: 5241 Mb
-CPU avg: 0.23
+CPU avg: 0.30 0.37 0.36
 GPU:
-RAM: 1068 / 3571 Mb
-Swap: 123 / 5241 Mb
+RAM: 1148 / 3571 Mb
+Swap: 119 / 5241 Mb

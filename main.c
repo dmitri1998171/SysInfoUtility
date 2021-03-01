@@ -6,6 +6,15 @@
 
 #define ARR_SIZE 50
 
+static struct option long_opt[] = {
+				{"hard_info", 0, 0, 'w'},
+				{"sys_info", 0, 0, 's'},
+				{"log", 0, 0, 'l'},
+				{"html", 0, 0, 'h'},
+				{"help", 0, 0, '?'},
+				{0,0,0,0}
+};
+
 struct mem {
 	int memTotal;	// Полный объем
 	int memAvail;	// Используется
@@ -14,7 +23,8 @@ struct mem {
 };
 
 struct sys_info {
-	float cpuavg;	  // Нагрузка процессора
+	float cpu_load;	  	  // Нагрузка процессора
+	char cpuavg[15];	  // Нагрузка процессора
 	int gpuavg;			  // Объем видеопамяти
 	struct mem mem;		  // ОЗУ и swap
 }sys_info;
@@ -45,7 +55,7 @@ void graph_strings_Func() {
 	// graph_strings.string_load[0] = 
 	// graph_strings.string_load[0] = 
 	// graph_strings.string_load[0] = 
-	graph_strings.string_load[3] = (sys_info.cpuavg / hard_info.cpu_cores) * 100;
+	graph_strings.string_load[3] = (sys_info.cpu_load / hard_info.cpu_cores) * 100;
 	// graph_strings.string_load[0] = 
 	graph_strings.string_load[5] = sys_info.gpuavg / 10;
 }
@@ -66,6 +76,64 @@ void get_number_from_str(char* str, int* value) {
 	*value = atoi(str);
 	*value = *value / 1000; // перевод Kb->Mb			??? 1000 или 1024
 	// https://habr.com/ru/post/193256/
+}
+
+// ##### SYSTEM INFO #######################
+
+void cpu_sys_info() {
+	char name2[] = "/proc/loadavg";
+	char str[15];
+
+	openFile(name2, 'r');
+	fgets(str, 15, fp);
+	fclose(fp);
+
+	strcpy(sys_info.cpuavg, str);
+	char *ptr = strtok(str, " ");
+     sys_info.cpu_load = atof(ptr);
+}
+
+void mem_info() {
+    char name1[] = "/proc/meminfo";
+	char str[ARR_SIZE];
+
+    openFile(name1, 'r');
+    while (fgets(str, ARR_SIZE, fp)) {
+        if(strstr(str, "MemTotal"))
+			get_number_from_str(parsing(str, " "), &sys_info.mem.memTotal);
+        if(strstr(str, "MemAvailable"))
+			get_number_from_str(parsing(str, " "), &sys_info.mem.memAvail);
+        if(strstr(str, "SwapTotal"))
+			get_number_from_str(parsing(str, " "), &sys_info.mem.swapTotal);
+        if(strstr(str, "SwapFree")) {
+			int tmp = 0;
+			get_number_from_str(parsing(str, " "), &tmp);
+			sys_info.mem.swapAvail = sys_info.mem.swapTotal - tmp;
+		}
+    }
+    fclose(fp);
+}
+
+void gpu_sys_info() {
+	char str[73];	
+
+	FILE* f = popen("dmesg | grep \'graphics memory\'", "r");
+    if (f) 
+		fgets(str, 73, f);
+	pclose(f);
+    	
+	char *value = strstr(str, "memory: ");
+	value = strstr(value, " ");
+	value = strtok(value, " ");
+
+	sys_info.gpuavg = atoi(value) / 1000 / 13.9;	// ???
+	// https://habr.com/ru/post/193256/
+}
+
+void get_sys_info() {
+    cpu_sys_info();
+	mem_info();
+	gpu_sys_info();
 }
 
 // ##### HARD INFO ########################
@@ -119,69 +187,13 @@ void get_hard_info() {
     version_info();
     network_interaces();
 	cpu_hard_info();
-}
-
-// ##### SYSTEM INFO #######################
-
-void cpu_sys_info() {
-	char name2[] = "/proc/loadavg";
-	char str[15];
-
-	openFile(name2, 'r');
-	fgets(str, 15, fp);
-	fclose(fp);
-
-	char *ptr = strtok(str, " ");
-     sys_info.cpuavg = atof(ptr);
-}
-
-void mem_info() {
-    char name1[] = "/proc/meminfo";
-	char str[ARR_SIZE];
-
-    openFile(name1, 'r');
-    while (fgets(str, ARR_SIZE, fp)) {
-        if(strstr(str, "MemTotal"))
-			get_number_from_str(parsing(str, " "), &sys_info.mem.memTotal);
-        if(strstr(str, "MemAvailable"))
-			get_number_from_str(parsing(str, " "), &sys_info.mem.memAvail);
-        if(strstr(str, "SwapTotal"))
-			get_number_from_str(parsing(str, " "), &sys_info.mem.swapTotal);
-        if(strstr(str, "SwapFree")) {
-			int tmp = 0;
-			get_number_from_str(parsing(str, " "), &tmp);
-			sys_info.mem.swapAvail = sys_info.mem.swapTotal - tmp;
-		}
-    }
-    fclose(fp);
-}
-
-void gpu_sys_info() {
-	char str[73];	
-
-	FILE* f = popen("dmesg | grep \'graphics memory\'", "r");
-    if (f) 
-		fgets(str, 73, f);
-	pclose(f);
-    	
-	char *value = strstr(str, "memory: ");
-	value = strstr(value, " ");
-	value = strtok(value, " ");
-
-	sys_info.gpuavg = atoi(value) / 1000 / 13.9;	// ???
-	// https://habr.com/ru/post/193256/
-}
-
-void get_sys_info() {
-    cpu_sys_info();
 	mem_info();
-	gpu_sys_info();
 }
 
 // ##### OUTPUT #############################
 
 void current_values_output() {
-	printf("CPU avg: %.2f\n", sys_info.cpuavg);
+	printf("CPU avg: %s\n", sys_info.cpuavg);
 	printf("GPU: %i Mb\n", sys_info.gpuavg);
 	printf("RAM: %i / %i Mb\n", sys_info.mem.memAvail, sys_info.mem.memTotal);
 	printf("Swap: %i / %i Mb\n", sys_info.mem.swapAvail, sys_info.mem.swapTotal);
@@ -217,7 +229,7 @@ void write_to_log() {
 	fprintf(fp, "RAM: %i Mb\n", sys_info.mem.memTotal);
 	fprintf(fp, "Swap: %i Mb\n", sys_info.mem.swapTotal);
 
-	fprintf(fp, "CPU avg: %.2f\n", sys_info.cpuavg);
+	fprintf(fp, "CPU avg: %s\n", sys_info.cpuavg);
 	fprintf(fp, "GPU:\n");
 	fprintf(fp, "RAM: %i / %i Mb\n", sys_info.mem.memAvail, sys_info.mem.memTotal);
 	fprintf(fp, "Swap: %i / %i Mb\n", sys_info.mem.swapAvail, sys_info.mem.swapTotal);
@@ -252,9 +264,9 @@ void generate_html() {
 			fprintf(fdst, "\t\t\t\t<div class=\"subblock\"><br></div>\n");
 			fprintf(fdst, "\t\t\t\t<div class=\"subblock\">\n");
 		}
-        fprintf(fdst, "\t\t\t\t\t<br>%s", str);
+        fprintf(fdst, "\t\t\t\t\t%s<br>", str);
     }
-    fprintf(fdst, "\t\t\t\t</div>\n");
+    fprintf(fdst, "\n\t\t\t\t</div>\n");
     fprintf(fdst, "\t\t\t</div>\n");
 	fprintf(fdst, "\t\t\t<div class=\"block\">\n");
 
@@ -296,15 +308,16 @@ int main(int argc, char *argv[]) {
 	if(argc == 1)
 		full_output();
 	else {
-		int res = 0;
-		while ((res = getopt(argc,argv,"wslh")) != -1) {
+		int res, optIdx;
+
+		while ((res = getopt_long(argc,argv,"wslh", long_opt, &optIdx)) != -1) {
 			switch(res) {
 				case 'w': { get_hard_info(); out(); break; }	// Вывод хар-к ПК
 				case 's': { get_sys_info(); current_values_output(); break; }	// Вывод текущ. знач.
 				case 'l': { full_output(); write_to_log(); break; }	// запись в лог
 				case 'h': { full_output(); write_to_log(); generate_html(); break; }	// запись в html
 				
-				case '?': { printf("\n Usage: %s [OPTION]\n\n -w, --hardware  print hardware information\n -s, --system    print system information\n -l, --log       output to \'sysInfo.log\' file\n -h, --html\t output to html\n -?\t\t print this help\n\n By default, without options, the utility displays hardware and system information\n\n", argv[0]); break; }
+				case '?': { printf("\n Usage: %s [OPTION]\n\n -w, --hard_info print hardware information\n -s, --sys_info  print system information\n -l, --log       output to \'sysInfo.log\' file\n -h, --html\t output to html\n -?, --help\t print this help\n\n By default, without options, the utility displays hardware and system information\n\n", argv[0]); break; }
 			}
 		}
 	}
