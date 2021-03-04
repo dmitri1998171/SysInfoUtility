@@ -16,7 +16,6 @@ struct ThreadArgs *threadArgs;
 
 struct ThreadArgs{
     int clntSock;
-    int state;
 };
 
 struct mem {
@@ -74,5 +73,5 @@ void full_output();
 
 // ##### NETWORK ###########################
 
-void TCPWay(int port, int max_clnt, int state, pthread_t* threadID);
-void UDPWay(int port, int max_clnt, int state, pthread_t* threadID);
+void TCPWay(int port, int max_clnt, pthread_t* threadID);
+void UDPWay(int port, int max_clnt, pthread_t* threadID);

@@ -1,11 +1,11 @@
 Version: Linux version 5.4.70-amd64-desktop 
-Network interfaces: enp0s3 lo 
+Network interfaces: enp0s3 lo enp0s3 lo 
 CPU:	 Intel(R) Core(TM) i5-8300H CPU @ 2.3
 CPU CORES:	4
 GPU: 
 RAM: 3571 Mb
 Swap: 5241 Mb
-CPU avg: 0.30 0.37 0.36
+CPU avg: 0.21 0.49 0.41
 GPU:
-RAM: 1148 / 3571 Mb
-Swap: 119 / 5241 Mb
+RAM: 936 / 3571 Mb
+Swap: 169 / 5241 Mb

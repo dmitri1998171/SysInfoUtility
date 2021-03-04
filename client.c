@@ -1,8 +1,8 @@
 #include "protocol.h"   
 
-void ClientTCPWay(char *serverIP, int port) {
+void ClientTCPWay(char *serverIP, int port, int client_state) {
     char getInfo[20] = "GET_SYSTEM_INFO";
-    int sock, state;
+    int sock;
     struct sockaddr_in echoServAddr;        
 
     if (( sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
@@ -16,13 +16,10 @@ void ClientTCPWay(char *serverIP, int port) {
     if (connect(sock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
         DieWithError("connect() failed");
     
-    if (send(sock, &getInfo, sizeof(getInfo), 0) != sizeof(getInfo))
+    if (send(sock, &client_state, sizeof(client_state), 0) != sizeof(client_state))
         DieWithError("send() sent a different number of bytes than expected");
 
-    if ((recv(sock, &state, sizeof(state), 0)) < 0)
-        DieWithError("recv() failed");
-
-    if(state == 0 || state == 3) {
+    if(client_state == 0 || client_state == 3) {
         if ((recv(sock, &hard_info, sizeof(hard_info), 0)) < 0)
             DieWithError("recv() failed.");
         if ((recv(sock, &mem, sizeof(mem), 0)) < 0)
@@ -32,14 +29,14 @@ void ClientTCPWay(char *serverIP, int port) {
             DieWithError("recv() failed.");
         current_values_output();
     }
-    if(state == 1) {
+    if(client_state == 1) {
         if ((recv(sock, &hard_info, sizeof(hard_info), 0)) < 0)
             DieWithError("recv() failed.");
         if ((recv(sock, &mem, sizeof(mem), 0)) < 0)
             DieWithError("recv() failed.");
         out();
     }
-    if(state == 2) {
+    if(client_state == 2) {
         if ((recv(sock, &sys_info, sizeof(sys_info), 0)) < 0)
             DieWithError("recv() failed.");
         if ((recv(sock, &mem, sizeof(mem), 0)) < 0)
@@ -121,12 +118,31 @@ int checkIP(char buffer[]) {
     else return 0;
 }
 
+void getInfo(char *type_proto, char *serverIP, int port, int state) {
+    if(strcmp(type_proto, "TCP") == 0 || strcmp(type_proto, "tcp") == 0)  
+        ClientTCPWay(serverIP, port, state);
+    else if(strcmp(type_proto, "UDP") == 0 || strcmp(type_proto, "udp") == 0)  
+        ClientUDPWay(serverIP, port);
+    else DieWithError("Invalid protocol type\n");
+}
+
 int main(int argc, char *argv[]) {
     // Парсинг и валидация аргументов 
-    if (argc != 4){    
-       fprintf(stderr, "Usage: %s <Server IP> <Echo Port> <TCP/UDP>\n", argv[0]);
+    if (argc < 4 || argc > 8){    
+       fprintf(stderr, "Usage: %s <Server IP> <Echo Port> <TCP/UDP> [OPTION]\n", argv[0]);
        exit(1);
     }
+
+    int res, optIdx, state = 0;
+    static struct option long_opt[] = {
+        {"hard_info", 0, 0, 'w'},
+        {"sys_info", 0, 0, 's'},
+        {"log", 0, 0, 'l'},
+        {"html", 0, 0, 'h'},
+        {"network", 1, 0, 'n'},
+        {"help", 0, 0, '?'},
+        {0,0,0,0}
+    };
 
     char *serverIP = argv[1];       
     if (!checkIP(serverIP)) {
@@ -139,11 +155,15 @@ int main(int argc, char *argv[]) {
     char type_proto[4];
     strcpy(type_proto, argv[3]);
 
-    if(strcmp(type_proto, "TCP") == 0 || strcmp(type_proto, "tcp") == 0)  
-        ClientTCPWay(serverIP, port);
-    else if(strcmp(type_proto, "UDP") == 0 || strcmp(type_proto, "udp") == 0)  
-        ClientUDPWay(serverIP, port);
-    else DieWithError("Invalid protocol type\n");
+    while ((res = getopt_long(argc,argv,"wslh?", long_opt, &optIdx)) != -1) {
+        switch(res) {
+            case 'w': { state += 1; getInfo(type_proto, serverIP, port, state); break; }	// Вывод хар-к ПК
+            case 's': { state += 2; getInfo(type_proto, serverIP, port, state); break; }	// Вывод текущ. знач.
+            case 'l': { getInfo(type_proto, serverIP, port, state); write_to_log(); break; }	// Запись в лог
+            case 'h': { getInfo(type_proto, serverIP, port, state); write_to_log(); generate_html(); break; }	// Запись в html
+            case '?': { printf("\n Usage: %s <Server IP> <Echo Port> <TCP/UDP> [OPTION]\n\n -w, --hard_info print hardware information\n -s, --sys_info  print system information\n -l, --log       output to \'sysInfo.log\' file\n -h, --html\t output to html\n -?, --help\t print this help\n\n By default, without options, the utility displays hardware and system information together\n\n", argv[0]); break; }
+        }
+    }
 
     exit(0);
 }

@@ -5,100 +5,75 @@
 void *ThreadMainTCP(void *threadArgs) {
     char echoBuffer[ECHOMAX];
     unsigned int cliAddrLen;
-    int clntSock, recvMsgSize, state, sendTmp;                       
+    int clntSock, recvMsgSize, client_state = 0;
 
-    /* Extract socket file descriptor from argument */
     clntSock = ((struct ThreadArgs *) threadArgs) -> clntSock;
-    state = ((struct ThreadArgs *) threadArgs) -> state;
-    free(threadArgs);              /* Deallocate memory for argument */
+    free(threadArgs);              
 
-    /* clntSock is connected to a client! */
-    if ((recvMsgSize = recv(clntSock, echoBuffer, ECHOMAX, 0)) < 0)
+    if ((recvMsgSize = recv(clntSock, &client_state, sizeof(client_state), 0)) < 0)
         DieWithError("recv() failed");
 
-    // Проверка на получение правильной команды от клиента
-    if(strcmp(echoBuffer, "GET_SYSTEM_INFO") == 0){
-        echoBuffer[recvMsgSize]='\0';
-        printf("Recv: %s\n\n", echoBuffer);
-
 		pthread_mutex_lock(&mutex);
-        sendTmp = send(clntSock, &state, sizeof(state), 0) != sizeof(state);
-        if(sendTmp)	
-			DieWithError("send() sent a different number of bytes than expected");
-		
-        if(state == 0 || state == 3) {
-		    sendTmp = send(clntSock, &hard_info, sizeof(hard_info), 0) != sizeof(hard_info);
-            if(sendTmp)	
+        if(client_state == 0 || client_state == 3) {
+            get_hard_info();
+            get_sys_info();
+            if(send(clntSock, &hard_info, sizeof(hard_info), 0) != sizeof(hard_info))	
 			    DieWithError("send() sent a different number of bytes than expected");
 
-            sendTmp = send(clntSock, &mem, sizeof(mem), 0) != sizeof(mem);    
-            if(sendTmp)	
+            if(send(clntSock, &mem, sizeof(mem), 0) != sizeof(mem))	
 			    DieWithError("send() sent a different number of bytes than expected");
 
-            sendTmp = send(clntSock, &sys_info, sizeof(sys_info), 0) != sizeof(sys_info);
+            if(send(clntSock, &sys_info, sizeof(sys_info), 0) != sizeof(sys_info))
+                DieWithError("send() sent a different number of bytes than expected");
         }
-		if(state == 1) {
-            sendTmp = send(clntSock, &hard_info, sizeof(hard_info), 0) != sizeof(hard_info);
-            if(sendTmp)	
+		if(client_state == 1) {
+            get_hard_info();
+            if(send(clntSock, &hard_info, sizeof(hard_info), 0) != sizeof(hard_info))	
 			    DieWithError("send() sent a different number of bytes than expected");
 
-            sendTmp = send(clntSock, &mem, sizeof(mem), 0) != sizeof(mem);    
+            if(send(clntSock, &mem, sizeof(mem), 0) != sizeof(mem))
+                DieWithError("send() sent a different number of bytes than expected");
         }
-		if(state == 2) {
-            sendTmp = send(clntSock, &sys_info, sizeof(sys_info), 0) != sizeof(sys_info);
-            if(sendTmp)	
+		if(client_state == 2) {
+            get_sys_info();
+            if(send(clntSock, &sys_info, sizeof(sys_info), 0) != sizeof(sys_info))	
 			    DieWithError("send() sent a different number of bytes than expected");
 
-            sendTmp = send(clntSock, &mem, sizeof(mem), 0) != sizeof(mem);
+            if(send(clntSock, &mem, sizeof(mem), 0) != sizeof(mem))
+                DieWithError("send() sent a different number of bytes than expected");
         }
 		pthread_mutex_unlock(&mutex);
 
-		if(sendTmp)	
-			DieWithError("send() sent a different number of bytes than expected");
-    }
-    else
-        printf("ERROR! Recieved bad client command!\n");
-    
     return (NULL);
 }
 
 void *ThreadMainUDP(void *threadArgs) {
     char echoBuffer[ECHOMAX];
-    int clntSock, recvMsgSize, state, sendTmp;
+    int clntSock, recvMsgSize, sendTmp, client_state = 0;
     unsigned int cliAddrLen;
     struct sockaddr_in echoClntAddr;        
     
     clntSock = ((struct ThreadArgs *) threadArgs) -> clntSock;
-    state = ((struct ThreadArgs *) threadArgs) -> state;
     free(threadArgs);              
 
     cliAddrLen = sizeof(echoClntAddr);
-    if ((recvMsgSize = recvfrom(clntSock, echoBuffer, ECHOMAX, 0,
+    if ((recvMsgSize = recvfrom(clntSock, &client_state, sizeof(client_state), 0,
         (struct sockaddr *) &echoClntAddr, &cliAddrLen)) < 0)
         DieWithError("recvfrom() failed");
 
-    if(strcmp(echoBuffer, "GET_SYSTEM_INFO") == 0){
-        echoBuffer[recvMsgSize]='\0';
-        printf("Recv: %s\n\n", echoBuffer);
-
         pthread_mutex_lock(&mutex);
-		if(state == 0 || state == 3) sendTmp = send(clntSock, &sys_info, sizeof(sys_info), 0) != sizeof(sys_info);
-		if(state == 1) sendTmp = send(clntSock, &hard_info, sizeof(hard_info), 0) != sizeof(hard_info);
-		if(state == 2) sendTmp = send(clntSock, &sys_info, sizeof(sys_info), 0) != sizeof(sys_info);
+		if(client_state == 0 || client_state == 3) sendTmp = send(clntSock, &sys_info, sizeof(sys_info), 0) != sizeof(sys_info);
+		if(client_state == 1) sendTmp = send(clntSock, &hard_info, sizeof(hard_info), 0) != sizeof(hard_info);
+		if(client_state == 2) sendTmp = send(clntSock, &sys_info, sizeof(sys_info), 0) != sizeof(sys_info);
 		pthread_mutex_unlock(&mutex);
     
         if(sendTmp)	
 			DieWithError("send() sent a different number of bytes than expected");
 
-        printf("\n\n");
-    }
-    else
-        printf("ERROR! Recieved bad client command!\n");
-    
     return (NULL);
 }
 
-void TCPWay(int port, int client_count, int state, pthread_t* threadID) {
+void TCPWay(int port, int client_count, pthread_t* threadID) {
     int sock, clntSock;                    
     unsigned int clntLen;           
     struct sockaddr_in echoServAddr;        
@@ -128,7 +103,6 @@ void TCPWay(int port, int client_count, int state, pthread_t* threadID) {
                    == NULL)
                 DieWithError("malloc() failed");
             threadArgs -> clntSock = clntSock;
-			threadArgs -> state = state;
 
             if (pthread_create(&threadID[i], NULL, ThreadMainTCP, (void *) threadArgs) != 0)
                 DieWithError("pthread_create() failed");
@@ -141,7 +115,7 @@ void TCPWay(int port, int client_count, int state, pthread_t* threadID) {
     }
 }
 
-void UDPWay(int port, int client_count, int state, pthread_t* threadID) {
+void UDPWay(int port, int client_count, pthread_t* threadID) {
     int sock;
     struct sockaddr_in echoServAddr;
     struct sockaddr_in echoClntAddr;
@@ -163,7 +137,6 @@ void UDPWay(int port, int client_count, int state, pthread_t* threadID) {
                    == NULL)
                 DieWithError("malloc() failed");
             threadArgs -> clntSock = sock;
-			threadArgs -> state = state;
 
             if (pthread_create(&threadID[i], NULL, ThreadMainUDP, (void *) threadArgs) != 0)
                 DieWithError("pthread_create() failed");
