@@ -38,15 +38,15 @@ void get_number_from_str(char* str, int* value) {
 
 void DieWithError(char *errorMessage)
 {
-    printf("%s\n", errorMessage);
+    printf("\nERROR: %s\n\n", errorMessage);
     exit(1);
 }
 
 void current_values_output() {
 	printf("CPU avg: %s\n", sys_info.cpuavg);
 	printf("GPU: %i Mb\n", sys_info.gpuavg);
-	printf("RAM: %i / %i Mb\n", sys_info.mem.memAvail, sys_info.mem.memTotal);
-	printf("Swap: %i / %i Mb\n\n", sys_info.mem.swapAvail, sys_info.mem.swapTotal);
+	printf("RAM: %i / %i Mb\n", mem.memAvail, mem.memTotal);
+	printf("Swap: %i / %i Mb\n\n", mem.swapAvail, mem.swapTotal);
 }
 
 void out() {
@@ -59,8 +59,8 @@ void out() {
 	printf("\nCPU: %s\n", hard_info.cpu);
 	printf("CPU CORES: %i\n", hard_info.cpu_cores);
 	printf("GPU: \n");
-	printf("RAM: %i Mb\n", sys_info.mem.memTotal);
-	printf("Swap: %i Mb\n", sys_info.mem.swapTotal);
+	printf("RAM: %i Mb\n", mem.memTotal);
+	printf("Swap: %i Mb\n\n", mem.swapTotal);
 }
 
 void write_to_log() {
@@ -76,13 +76,13 @@ void write_to_log() {
 	fprintf(fp, "\nCPU:\t%s\n", hard_info.cpu);
 	fprintf(fp, "CPU CORES:\t%i\n", hard_info.cpu_cores);
 	fprintf(fp, "GPU: \n");
-	fprintf(fp, "RAM: %i Mb\n", sys_info.mem.memTotal);
-	fprintf(fp, "Swap: %i Mb\n", sys_info.mem.swapTotal);
+	fprintf(fp, "RAM: %i Mb\n", mem.memTotal);
+	fprintf(fp, "Swap: %i Mb\n", mem.swapTotal);
 
 	fprintf(fp, "CPU avg: %s\n", sys_info.cpuavg);
 	fprintf(fp, "GPU:\n");
-	fprintf(fp, "RAM: %i / %i Mb\n", sys_info.mem.memAvail, sys_info.mem.memTotal);
-	fprintf(fp, "Swap: %i / %i Mb\n", sys_info.mem.swapAvail, sys_info.mem.swapTotal);
+	fprintf(fp, "RAM: %i / %i Mb\n", mem.memAvail, mem.memTotal);
+	fprintf(fp, "Swap: %i / %i Mb\n", mem.swapAvail, mem.swapTotal);
 
 	fclose(fp);
 }
@@ -150,7 +150,7 @@ void full_output() {
     
 	printf("\n\tSystem information\n\n");
 	out();						// Вывод хар-к ПК
-	printf("\n-------------------------------\n\n");
+	printf("-------------------------------\n\n");
 	current_values_output();	// Вывод текущих значений
 }
 

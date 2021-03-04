@@ -1,38 +1,57 @@
-#include <sys/socket.h> /* for socket(), connect(), send(), and recv() */
-#include <arpa/inet.h>  /* for sockaddr_in and inet_addr() */
-#include <stdio.h>      /* for printf() and fprintf() */
-#include <stdlib.h>     /* for atoi() and exit() */
-#include <string.h>     /* for memset() */
-#include <unistd.h>     /* for close() */
+#include <sys/socket.h> 
+#include <arpa/inet.h>  
+#include <stdio.h>      
+#include <stdlib.h>     
+#include <string.h>     
+#include <unistd.h>     
 #include "protocol.h"   
 
 void ClientTCPWay(char *servIP){
     char getInfo[20] = "GET_SYSTEM_INFO";
-    int sock;
-    struct sockaddr_in echoServAddr;        /* Echo server address */
+    int sock, state;
+    struct sockaddr_in echoServAddr;        
 
-    /* Create a reliable, stream socket using TCP */
     if (( sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
         DieWithError("socket() failed");
 
-    /* Construct the server address structure */
-    memset(&echoServAddr, 0, sizeof(echoServAddr));     /* Zero out structure */
-    echoServAddr.sin_family      = AF_INET;             /* Internet address family */
-    echoServAddr.sin_addr.s_addr = inet_addr(servIP);   /* Server IP address */
-    echoServAddr.sin_port        = htons(port);         /* Server port */
+    memset(&echoServAddr, 0, sizeof(echoServAddr));     
+    echoServAddr.sin_family      = AF_INET;             
+    echoServAddr.sin_addr.s_addr = inet_addr(servIP);   
+    echoServAddr.sin_port        = htons(port);
 
-    /* Establish the connection to the echo server */
     if (connect(sock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
         DieWithError("connect() failed");
     
     if (send(sock, &getInfo, sizeof(getInfo), 0) != sizeof(getInfo))
         DieWithError("send() sent a different number of bytes than expected");
 
-    if ((recv(sock, &sys_info, sizeof(sys_info), 0)) < 0)
+    if ((recv(sock, &state, sizeof(state), 0)) < 0)
         DieWithError("recv() failed");
-    
-    current_values_output();
-	// out();  // вывод на экран
+
+    if(state == 0 || state == 3) {
+        if ((recv(sock, &hard_info, sizeof(hard_info), 0)) < 0)
+            DieWithError("recv() failed.");
+        if ((recv(sock, &mem, sizeof(mem), 0)) < 0)
+            DieWithError("recv() failed.");
+        out();
+        if ((recv(sock, &sys_info, sizeof(sys_info), 0)) < 0)
+            DieWithError("recv() failed.");
+        current_values_output();
+    }
+    if(state == 1) {
+        if ((recv(sock, &hard_info, sizeof(hard_info), 0)) < 0)
+            DieWithError("recv() failed.");
+        if ((recv(sock, &mem, sizeof(mem), 0)) < 0)
+            DieWithError("recv() failed.");
+        out();
+    }
+    if(state == 2) {
+        if ((recv(sock, &sys_info, sizeof(sys_info), 0)) < 0)
+            DieWithError("recv() failed.");
+        if ((recv(sock, &mem, sizeof(mem), 0)) < 0)
+            DieWithError("recv() failed.");
+        current_values_output();
+    }
 
     close(sock);
 }
@@ -133,14 +152,10 @@ int main(int argc, char *argv[]){
     }
     // ==========================
 
-    if(strcmp(type_proto, "TCP")==0 || strcmp(type_proto, "tcp")==0) { 
-        printf("TCPWay\n"); 
+    if(strcmp(type_proto, "TCP")==0 || strcmp(type_proto, "tcp")==0)  
         ClientTCPWay(servIP);
-    }
-    else if(strcmp(type_proto, "UDP")==0 || strcmp(type_proto, "udp")==0) { 
-        printf("UDPWay\n"); 
+    else if(strcmp(type_proto, "UDP")==0 || strcmp(type_proto, "udp")==0)  
         ClientUDPWay(servIP);
-    }
     else { printf("Invalid protocol type\n"); exit(1); }
 
     exit(0);

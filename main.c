@@ -23,15 +23,17 @@ int main(int argc, char *argv[]) {
 				case 'l': { full_output(); write_to_log(); break; }	// Запись в лог
 				case 'h': { full_output(); write_to_log(); generate_html(); break; }	// Запись в html
 				case 'n': { 
+					if(state == 0) full_output();
 
 					printf("port: ");
 					scanf("%i", &port);
 
-					if(port < 1024 || port > 65535) {
-						printf("Invalid port\n"); exit(1); }
+					if(port < 1024 || port > 65535) 
+						DieWithError("Invalid port"); 
 
 					printf("client count: ");
-					scanf("%i", &client_count);
+					if(scanf("%i", &client_count) < 1)
+						DieWithError("Invalid client count"); 
 					
 					pthread_mutex_init(&mutex, NULL);
 					threadID = (pthread_t*) malloc(client_count * sizeof(pthread_t));

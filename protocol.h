@@ -28,13 +28,12 @@ struct mem {
 	int memAvail;	// Используется
 	int swapTotal;	// swap полный
 	int swapAvail;	// swap исп.
-};
+}mem;
 
 struct sys_info {
 	float cpu_load;	  	  // Нагрузка процессора
 	char cpuavg[15];	  // Нагрузка процессора
 	int gpuavg;			  // Объем видеопамяти
-	struct mem mem;		  // ОЗУ и swap
 }sys_info;
 
 struct hard_info {
@@ -61,14 +60,14 @@ void mem_info();
 void gpu_sys_info();
 void get_sys_info();
 
-// ##### HARD INFO ########################
+// ##### HARD INFO #########################
 
 void version_info();
 void network_interaces();
 void cpu_hard_info();
 void get_hard_info();
 
-// ##### OUTPUT #############################
+// ##### OUTPUT ############################
 
 void DieWithError(char *errorMessage);
 void current_values_output();
@@ -77,7 +76,7 @@ void write_to_log();
 void generate_html();
 void full_output();
 
-// ##### NETWORK ############################
+// ##### NETWORK ###########################
 
 void TCPWay(int port, int max_clnt, int state);
 void UDPWay(int port, int max_clnt, int state);

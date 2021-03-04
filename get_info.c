@@ -22,15 +22,15 @@ void mem_info() {
     openFile(name1, 'r');
     while (fgets(str, ARR_SIZE, fp)) {
         if(strstr(str, "MemTotal"))
-			get_number_from_str(parsing(str, " "), &sys_info.mem.memTotal);
+			get_number_from_str(parsing(str, " "), &mem.memTotal);
         if(strstr(str, "MemAvailable"))
-			get_number_from_str(parsing(str, " "), &sys_info.mem.memAvail);
+			get_number_from_str(parsing(str, " "), &mem.memAvail);
         if(strstr(str, "SwapTotal"))
-			get_number_from_str(parsing(str, " "), &sys_info.mem.swapTotal);
+			get_number_from_str(parsing(str, " "), &mem.swapTotal);
         if(strstr(str, "SwapFree")) {
 			int tmp = 0;
 			get_number_from_str(parsing(str, " "), &tmp);
-			sys_info.mem.swapAvail = sys_info.mem.swapTotal - tmp;
+			mem.swapAvail = mem.swapTotal - tmp;
 		}
     }
     fclose(fp);

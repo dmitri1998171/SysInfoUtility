@@ -21,12 +21,36 @@ void *ThreadMainTCP(void *threadArgs) {
         echoBuffer[recvMsgSize]='\0';
         printf("Recv: %s\n\n", echoBuffer);
 
-		get_sys_info();
-
 		pthread_mutex_lock(&mutex);
-		if(state == 0 || state == 3) sendTmp = send(clntSock, &sys_info, sizeof(sys_info), 0) != sizeof(sys_info);
-		if(state == 1) sendTmp = send(clntSock, &hard_info, sizeof(hard_info), 0) != sizeof(hard_info);
-		if(state == 2) sendTmp = send(clntSock, &sys_info, sizeof(sys_info), 0) != sizeof(sys_info);
+        sendTmp = send(clntSock, &state, sizeof(state), 0) != sizeof(state);
+        if(sendTmp)	
+			DieWithError("send() sent a different number of bytes than expected");
+		
+        if(state == 0 || state == 3) {
+		    sendTmp = send(clntSock, &hard_info, sizeof(hard_info), 0) != sizeof(hard_info);
+            if(sendTmp)	
+			    DieWithError("send() sent a different number of bytes than expected");
+
+            sendTmp = send(clntSock, &mem, sizeof(mem), 0) != sizeof(mem);    
+            if(sendTmp)	
+			    DieWithError("send() sent a different number of bytes than expected");
+
+            sendTmp = send(clntSock, &sys_info, sizeof(sys_info), 0) != sizeof(sys_info);
+        }
+		if(state == 1) {
+            sendTmp = send(clntSock, &hard_info, sizeof(hard_info), 0) != sizeof(hard_info);
+            if(sendTmp)	
+			    DieWithError("send() sent a different number of bytes than expected");
+
+            sendTmp = send(clntSock, &mem, sizeof(mem), 0) != sizeof(mem);    
+        }
+		if(state == 2) {
+            sendTmp = send(clntSock, &sys_info, sizeof(sys_info), 0) != sizeof(sys_info);
+            if(sendTmp)	
+			    DieWithError("send() sent a different number of bytes than expected");
+
+            sendTmp = send(clntSock, &mem, sizeof(mem), 0) != sizeof(mem);
+        }
 		pthread_mutex_unlock(&mutex);
 
 		if(sendTmp)	
@@ -84,7 +108,7 @@ void TCPWay(int port, int max_clnt, int state) {
         DieWithError("socket() failed");
       
     memset(&echoServAddr, 0, sizeof(echoServAddr));  
-    echoServAddr.sin_family = AF_INET;               
+    echoServAddr.sin_family = PF_INET;               
     echoServAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     echoServAddr.sin_port = htons(port);             
 
@@ -126,7 +150,7 @@ void UDPWay(int port, int max_clnt, int state) {
         DieWithError("socket() failed");
 
     memset(&echoServAddr, 0, sizeof(echoServAddr));   
-    echoServAddr.sin_family = AF_INET;
+    echoServAddr.sin_family = PF_INET;
     echoServAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     echoServAddr.sin_port = htons(port);
 
