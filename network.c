@@ -98,7 +98,7 @@ void *ThreadMainUDP(void *threadArgs) {
     return (NULL);
 }
 
-void TCPWay(int port, int max_clnt, int state) {
+void TCPWay(int port, int client_count, int state, pthread_t* threadID) {
     int sock, clntSock;                    
     unsigned int clntLen;           
     struct sockaddr_in echoServAddr;        
@@ -115,11 +115,11 @@ void TCPWay(int port, int max_clnt, int state) {
     if (bind(sock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
         DieWithError("bind() failed");
 
-    if (listen(sock, max_clnt) < 0)
+    if (listen(sock, client_count) < 0)
         DieWithError("listen() failed");
 
     for(;;){
-        for (int i = 0; i < max_clnt; i++){
+        for (int i = 0; i < client_count; i++){
             clntLen = sizeof(echoClntAddr);
             if ((clntSock = accept(sock, (struct sockaddr *) &echoClntAddr, &clntLen)) < 0)
                 DieWithError("accept() failed");
@@ -141,7 +141,7 @@ void TCPWay(int port, int max_clnt, int state) {
     }
 }
 
-void UDPWay(int port, int max_clnt, int state) {
+void UDPWay(int port, int client_count, int state, pthread_t* threadID) {
     int sock;
     struct sockaddr_in echoServAddr;
     struct sockaddr_in echoClntAddr;

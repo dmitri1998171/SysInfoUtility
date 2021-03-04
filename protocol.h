@@ -10,12 +10,8 @@
 #define ARR_SIZE 50
 #define ECHOMAX 32
 
-char type_proto[3];
-int port, client_count;
 FILE *fp;
-pthread_t* threadID;
 pthread_mutex_t mutex;
-
 struct ThreadArgs *threadArgs;
 
 struct ThreadArgs{
@@ -78,5 +74,5 @@ void full_output();
 
 // ##### NETWORK ###########################
 
-void TCPWay(int port, int max_clnt, int state);
-void UDPWay(int port, int max_clnt, int state);
+void TCPWay(int port, int max_clnt, int state, pthread_t* threadID);
+void UDPWay(int port, int max_clnt, int state, pthread_t* threadID);

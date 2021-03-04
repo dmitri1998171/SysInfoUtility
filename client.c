@@ -1,12 +1,6 @@
-#include <sys/socket.h> 
-#include <arpa/inet.h>  
-#include <stdio.h>      
-#include <stdlib.h>     
-#include <string.h>     
-#include <unistd.h>     
 #include "protocol.h"   
 
-void ClientTCPWay(char *servIP){
+void ClientTCPWay(char *serverIP, int port) {
     char getInfo[20] = "GET_SYSTEM_INFO";
     int sock, state;
     struct sockaddr_in echoServAddr;        
@@ -15,8 +9,8 @@ void ClientTCPWay(char *servIP){
         DieWithError("socket() failed");
 
     memset(&echoServAddr, 0, sizeof(echoServAddr));     
-    echoServAddr.sin_family      = AF_INET;             
-    echoServAddr.sin_addr.s_addr = inet_addr(servIP);   
+    echoServAddr.sin_family      = PF_INET;             
+    echoServAddr.sin_addr.s_addr = inet_addr(serverIP);   
     echoServAddr.sin_port        = htons(port);
 
     if (connect(sock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
@@ -56,7 +50,7 @@ void ClientTCPWay(char *servIP){
     close(sock);
 }
 
-void ClientUDPWay(char *servIP){
+void ClientUDPWay(char *serverIP, int port) {
     char getInfo[20] = "GET_SYSTEM_INFO";
     int echoStringLen, sock;               /* Length of string to echo */
     unsigned int fromSize;           /* In-out of address size for recvfrom() */
@@ -70,7 +64,7 @@ void ClientUDPWay(char *servIP){
     /* Construct the server address structure */
     memset(&echoServAddr, 0, sizeof(echoServAddr));    /* Zero out structure */
     echoServAddr.sin_family = AF_INET;                 /* Internet addr family */
-    echoServAddr.sin_addr.s_addr = inet_addr(servIP);  /* Server IP address */
+    echoServAddr.sin_addr.s_addr = inet_addr(serverIP);  /* Server IP address */
     echoServAddr.sin_port   = htons(port);     /* Server port */
 
     /* Send the string to the server */
@@ -97,7 +91,7 @@ void ClientUDPWay(char *servIP){
     exit(0);
 }
 
-int checkIP(char buffer[]){
+int checkIP(char buffer[]) {
     int CountIp = 0;
     char* NotInt;
     int current; 
@@ -127,36 +121,29 @@ int checkIP(char buffer[]){
     else return 0;
 }
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]) {
+    // Парсинг и валидация аргументов 
     if (argc != 4){    
        fprintf(stderr, "Usage: %s <Server IP> <Echo Port> <TCP/UDP>\n", argv[0]);
        exit(1);
     }
 
-    // Парсинг и валидация аргументов 
+    char *serverIP = argv[1];       
+    if (!checkIP(serverIP)) {
+        DieWithError("Invalid IP\n"); }
 
-    char *servIP = argv[1];       
-    port = atoi(argv[2]);         
+    int port = atoi(argv[2]);         
+    if(port < 1024 || port > 65535) {
+        DieWithError("Invalid port\n"); }
+    
+    char type_proto[4];
     strcpy(type_proto, argv[3]);
 
-    // --------------------------
-
-    if (!checkIP(servIP)){
-        printf("Invalid IP\n");
-        exit(1);
-    }
-
-    if(port < 1024 || port > 65535){
-        printf("Invalid port\n");
-        exit(1);
-    }
-    // ==========================
-
-    if(strcmp(type_proto, "TCP")==0 || strcmp(type_proto, "tcp")==0)  
-        ClientTCPWay(servIP);
-    else if(strcmp(type_proto, "UDP")==0 || strcmp(type_proto, "udp")==0)  
-        ClientUDPWay(servIP);
-    else { printf("Invalid protocol type\n"); exit(1); }
+    if(strcmp(type_proto, "TCP") == 0 || strcmp(type_proto, "tcp") == 0)  
+        ClientTCPWay(serverIP, port);
+    else if(strcmp(type_proto, "UDP") == 0 || strcmp(type_proto, "udp") == 0)  
+        ClientUDPWay(serverIP, port);
+    else DieWithError("Invalid protocol type\n");
 
     exit(0);
 }

@@ -18,16 +18,18 @@ int main(int argc, char *argv[]) {
 		while ((res = getopt_long(argc,argv,"wslhn", long_opt, &optIdx)) != -1) {
 			switch(res) {
 				// case '0': printf("without args\n"); break;
-				case 'w': { get_hard_info(); out(); state = 1; break; }	// Вывод хар-к ПК
-				case 's': { get_sys_info(); current_values_output(); state = 2; break; }	// Вывод текущ. знач.
+				case 'w': { get_hard_info(); out(); state += 1; break; }	// Вывод хар-к ПК
+				case 's': { get_sys_info(); current_values_output(); state += 2; break; }	// Вывод текущ. знач.
 				case 'l': { full_output(); write_to_log(); break; }	// Запись в лог
 				case 'h': { full_output(); write_to_log(); generate_html(); break; }	// Запись в html
 				case 'n': { 
+					char type_proto[3];
+					int port, client_count;
+					
 					if(state == 0) full_output();
 
 					printf("port: ");
 					scanf("%i", &port);
-
 					if(port < 1024 || port > 65535) 
 						DieWithError("Invalid port"); 
 
@@ -36,16 +38,16 @@ int main(int argc, char *argv[]) {
 						DieWithError("Invalid client count"); 
 					
 					pthread_mutex_init(&mutex, NULL);
-					threadID = (pthread_t*) malloc(client_count * sizeof(pthread_t));
+					pthread_t* threadID = (pthread_t*) malloc(client_count * sizeof(pthread_t));
 					
 					printf("protocol type(TCP/UDP): ");
 					scanf("%s", type_proto);
 					
 					if(strcmp(type_proto, "TCP") == 0 || strcmp(type_proto, "tcp") == 0) { 
-						TCPWay(port, client_count, state); 
+						TCPWay(port, client_count, state, threadID); 
 					}
 					else if(strcmp(type_proto, "UDP") == 0 || strcmp(type_proto, "udp") == 0) { 
-						UDPWay(port, client_count, state); 
+						UDPWay(port, client_count, state, threadID); 
 					}
 					else DieWithError("Unknown protocol type");
 
