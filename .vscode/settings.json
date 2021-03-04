@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "protocol.h": "c",
+        "stdio.h": "c",
+        "socket.h": "c"
+    }
+}
