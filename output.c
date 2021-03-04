@@ -38,7 +38,7 @@ void get_number_from_str(char* str, int* value) {
 
 void DieWithError(char *errorMessage)
 {
-    perror(errorMessage);
+    printf("%s\n", errorMessage);
     exit(1);
 }
 

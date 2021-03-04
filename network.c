@@ -2,7 +2,7 @@
 
 // ##### NETWORK ############################
 
-void *ThreadMainTCP(void *threadArgs){
+void *ThreadMainTCP(void *threadArgs) {
     char echoBuffer[ECHOMAX];
     unsigned int cliAddrLen;
     int clntSock, recvMsgSize, state, sendTmp;                       
@@ -31,8 +31,6 @@ void *ThreadMainTCP(void *threadArgs){
 
 		if(sendTmp)	
 			DieWithError("send() sent a different number of bytes than expected");
-
-        printf("\n\n");
     }
     else
         printf("ERROR! Recieved bad client command!\n");
@@ -40,7 +38,7 @@ void *ThreadMainTCP(void *threadArgs){
     return (NULL);
 }
 
-void *ThreadMainUDP(void *threadArgs){
+void *ThreadMainUDP(void *threadArgs) {
     char echoBuffer[ECHOMAX];
     int clntSock, recvMsgSize, state, sendTmp;
     unsigned int cliAddrLen;
@@ -76,7 +74,7 @@ void *ThreadMainUDP(void *threadArgs){
     return (NULL);
 }
 
-void TCPWay(int port, char *type_proto, int max_clnt, int state) {
+void TCPWay(int port, int max_clnt, int state) {
     int sock, clntSock;                    
     unsigned int clntLen;           
     struct sockaddr_in echoServAddr;        
@@ -119,22 +117,19 @@ void TCPWay(int port, char *type_proto, int max_clnt, int state) {
     }
 }
 
-void UDPWay(){
-    int sock;                               /* Socket */
-    struct sockaddr_in echoServAddr;        /* Local address */
-    struct sockaddr_in echoClntAddr;        /* Client address */
+void UDPWay(int port, int max_clnt, int state) {
+    int sock;
+    struct sockaddr_in echoServAddr;
+    struct sockaddr_in echoClntAddr;
 
-    /* Create socket for sending/receiving datagrams */
     if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
         DieWithError("socket() failed");
 
-    /* Construct local address structure */
-    memset(&echoServAddr, 0, sizeof(echoServAddr));   /* Zero out structure */
-    echoServAddr.sin_family = AF_INET;                /* Internet address family */
-    echoServAddr.sin_addr.s_addr = htonl(INADDR_ANY); /* Any incoming interface */
-    echoServAddr.sin_port = htons(port);              /* Local port */
+    memset(&echoServAddr, 0, sizeof(echoServAddr));   
+    echoServAddr.sin_family = AF_INET;
+    echoServAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    echoServAddr.sin_port = htons(port);
 
-    /* Bind to the local address */
     if (bind(sock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
         DieWithError("bind() failed");
 
@@ -144,6 +139,7 @@ void UDPWay(){
                    == NULL)
                 DieWithError("malloc() failed");
             threadArgs -> clntSock = sock;
+			threadArgs -> state = state;
 
             if (pthread_create(&threadID[i], NULL, ThreadMainUDP, (void *) threadArgs) != 0)
                 DieWithError("pthread_create() failed");

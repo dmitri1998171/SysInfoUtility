@@ -10,7 +10,7 @@
 #define ARR_SIZE 50
 #define ECHOMAX 32
 
-char *type_proto;
+char type_proto[3];
 int port, client_count;
 FILE *fp;
 pthread_t* threadID;
@@ -79,4 +79,5 @@ void full_output();
 
 // ##### NETWORK ############################
 
-void TCPWay(int port, char *type_proto, int max_clnt, int state);
+void TCPWay(int port, int max_clnt, int state);
+void UDPWay(int port, int max_clnt, int state);

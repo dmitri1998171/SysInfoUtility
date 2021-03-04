@@ -23,18 +23,31 @@ int main(int argc, char *argv[]) {
 				case 'l': { full_output(); write_to_log(); break; }	// Запись в лог
 				case 'h': { full_output(); write_to_log(); generate_html(); break; }	// Запись в html
 				case 'n': { 
-					printf("protocol type(TCP/UDP): ");
-					scanf("%s", type_proto);
+
 					printf("port: ");
 					scanf("%i", &port);
+
+					if(port < 1024 || port > 65535) {
+						printf("Invalid port\n"); exit(1); }
+
 					printf("client count: ");
 					scanf("%i", &client_count);
 					
 					pthread_mutex_init(&mutex, NULL);
 					threadID = (pthread_t*) malloc(client_count * sizeof(pthread_t));
+					
+					printf("protocol type(TCP/UDP): ");
+					scanf("%s", type_proto);
+					
+					if(strcmp(type_proto, "TCP") == 0 || strcmp(type_proto, "tcp") == 0) { 
+						TCPWay(port, client_count, state); 
+					}
+					else if(strcmp(type_proto, "UDP") == 0 || strcmp(type_proto, "udp") == 0) { 
+						UDPWay(port, client_count, state); 
+					}
+					else DieWithError("Unknown protocol type");
 
-					TCPWay(port, type_proto, client_count, state); 
-					break; }	// Отправка по интернет
+					break; }	// Отправка удаленному клиенту
 				case '?': { printf("\n Usage: %s [OPTION]\n\n -w, --hard_info print hardware information\n -s, --sys_info  print system information\n -l, --log       output to \'sysInfo.log\' file\n -h, --html\t output to html\n -n, --network   send info to remote client\n -?, --help\t print this help\n\n By default, without options, the utility displays hardware and system information\n\n", argv[0]); break; }
 			}
 		}

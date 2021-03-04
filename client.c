@@ -6,7 +6,7 @@
 #include <unistd.h>     /* for close() */
 #include "protocol.h"   
 
-void TCPWay(char *servIP){
+void ClientTCPWay(char *servIP){
     char getInfo[20] = "GET_SYSTEM_INFO";
     int sock;
     struct sockaddr_in echoServAddr;        /* Echo server address */
@@ -37,7 +37,7 @@ void TCPWay(char *servIP){
     close(sock);
 }
 
-void UDPWay(char *servIP){
+void ClientUDPWay(char *servIP){
     char getInfo[20] = "GET_SYSTEM_INFO";
     int echoStringLen, sock;               /* Length of string to echo */
     unsigned int fromSize;           /* In-out of address size for recvfrom() */
@@ -118,7 +118,7 @@ int main(int argc, char *argv[]){
 
     char *servIP = argv[1];       
     port = atoi(argv[2]);         
-    type_proto = argv[3];
+    strcpy(type_proto, argv[3]);
 
     // --------------------------
 
@@ -135,11 +135,11 @@ int main(int argc, char *argv[]){
 
     if(strcmp(type_proto, "TCP")==0 || strcmp(type_proto, "tcp")==0) { 
         printf("TCPWay\n"); 
-        TCPWay(servIP);
+        ClientTCPWay(servIP);
     }
     else if(strcmp(type_proto, "UDP")==0 || strcmp(type_proto, "udp")==0) { 
         printf("UDPWay\n"); 
-        UDPWay(servIP);
+        ClientUDPWay(servIP);
     }
     else { printf("Invalid protocol type\n"); exit(1); }
 
