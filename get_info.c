@@ -39,7 +39,7 @@ void mem_info() {
 void gpu_sys_info() {
 	char str[73];	
 
-	FILE* f = popen("dmesg | grep \'graphics memory\'", "r");
+	FILE* f = popen("dmesg | grep \'graphics memory:\'", "r");
     if (f) 
 		fgets(str, 73, f);
 	pclose(f);
@@ -52,19 +52,37 @@ void gpu_sys_info() {
 	// https://habr.com/ru/post/193256/
 }
 
+void cpu_temp_info() {
+	char name2[] = "/sys/devices/platform/coretemp.0/hwmon/hwmon5/temp1_input";
+	char str[15];
+
+	openFile(name2, 'r');
+	fgets(str, 15, fp);
+	fclose(fp);
+
+//	strcpy(sys_info.cpuavg, str);
+//	char *ptr = strtok(str, " ");
+     	sys_info.cpu_temp_mid = atoi(str) / 1000;
+}
+
 void get_sys_info() {
     cpu_sys_info();
 	mem_info();
 	gpu_sys_info();
+	cpu_temp_info();
 }
 
 // ##### HARD INFO ########################
 
 void version_info() {
-    char ver[] = "/proc/version";
-    openFile(ver, 'r');
-    fgets(hard_info.version, ARR_SIZE-14, fp);
+	char str[ARR_SIZE];
+	
+    openFile("/proc/version", 'r');
+    fgets(str, ARR_SIZE, fp);
     fclose(fp);
+    
+    char *ptr = strtok(str, "Linux version ");
+    strcpy(hard_info.version, ptr);
 }
 
 void network_interaces() {

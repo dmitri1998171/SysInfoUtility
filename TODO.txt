@@ -18,7 +18,7 @@
     \/ - RAM
     \/ - swap
     \/ - перевод RAM в Mb
-    - temp          (обернуть lm-sensors)
+    \/ - temp          (/sys/devices/platform/coretemp.0/hwmon/hwmon5/temp1_input)
     - объем HDD/SSD     (/proc/partitions)
 \/ 4) вывод в log
 \/ 5) ... в HTML
