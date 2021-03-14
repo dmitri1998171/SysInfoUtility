@@ -36,7 +36,8 @@ struct hard_info {
 	char net_int[ARR_SIZE][ARR_SIZE]; // Сетевые интерфейсы
 	char cpu[ARR_SIZE];			 	  // Процессор
 	int cpu_cores;		 	 		  // Кол-во ядер
-	unsigned int count;	  			  // кол-во сетев. инетерфейсов
+	unsigned int count;	  			  // Кол-во сетев. инетерфейсов
+	char resolution[ARR_SIZE/4];	  // Разрешение экрана
 }hard_info;
 
 struct graph_strings {

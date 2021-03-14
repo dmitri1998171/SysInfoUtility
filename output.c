@@ -59,6 +59,7 @@ void out() {
 	printf("\nCPU: %s\n", hard_info.cpu);
 	printf("CPU CORES: %i\n", hard_info.cpu_cores);
 	printf("GPU: \n");
+	printf("Resolution: %s", hard_info.resolution);
 	printf("RAM: %i Mb\n", mem.memTotal);
 	printf("Swap: %i Mb\n\n", mem.swapTotal);
 }

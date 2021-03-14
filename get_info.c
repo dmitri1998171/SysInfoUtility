@@ -3,23 +3,21 @@
 // ##### SYSTEM INFO #######################
 
 void cpu_sys_info() {
-	char name2[] = "/proc/loadavg";
 	char str[15];
 
-	openFile(name2, 'r');
+	openFile("/proc/loadavg", 'r');
 	fgets(str, 15, fp);
 	fclose(fp);
 
 	strcpy(sys_info.cpuavg, str);
 	char *ptr = strtok(str, " ");
-     sys_info.cpu_load = atof(ptr);
+    sys_info.cpu_load = atof(ptr);
 }
 
 void mem_info() {
-    char name1[] = "/proc/meminfo";
 	char str[ARR_SIZE];
 
-    openFile(name1, 'r');
+    openFile("/proc/meminfo", 'r');
     while (fgets(str, ARR_SIZE, fp)) {
         if(strstr(str, "MemTotal"))
 			get_number_from_str(parsing(str, " "), &mem.memTotal);
@@ -37,14 +35,15 @@ void mem_info() {
 }
 
 void gpu_sys_info() {
-	char str[73];	
+	char str[73];
 
 	FILE* f = popen("dmesg | grep \'graphics memory\'", "r");
+	// FILE* f = popen("/var/log/syslog.1", "r");
     if (f) 
 		fgets(str, 73, f);
 	pclose(f);
     	
-	char *value = strstr(str, "memory: ");
+	char *value = strstr(str, "graphics memory: ");
 	value = strstr(value, " ");
 	value = strtok(value, " ");
 
@@ -61,8 +60,7 @@ void get_sys_info() {
 // ##### HARD INFO ########################
 
 void version_info() {
-    char ver[] = "/proc/version";
-    openFile(ver, 'r');
+    openFile("/proc/version", 'r');
     fgets(hard_info.version, ARR_SIZE-14, fp);
     fclose(fp);
 }
@@ -105,10 +103,17 @@ void cpu_hard_info() {
 	fclose(fp);
 }
 
+void resolution() {
+	openFile("/sys/class/graphics/fb0/virtual_size", 'r');
+    fgets(hard_info.resolution, ARR_SIZE/4, fp);
+    fclose(fp);
+}
+
 void get_hard_info() {
     version_info();
     network_interaces();
 	cpu_hard_info();
+	resolution();
 	mem_info();
 }
 

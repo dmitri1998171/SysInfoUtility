@@ -9,12 +9,13 @@
         \/ 1) cpu
         \/   1.1) кол-во процов (cpu cores в proc/cpuinfo)
         2) GPU           (/sys/class/graphics/fb0/name)
-            - resolution (/sys/class/graphics/fb0/modes)
+            \/ - resolution (/sys/class/graphics/fb0/virtual_size)
         \/ 3) RAM
         \/ 4) swap
 2) загрузка 
     \/ - CPU
     \/ - GPU            (dmesg | grep 'graphics memory')
+    - переделать парсинг GPU
     \/ - RAM
     \/ - swap
     \/ - перевод RAM в Mb
@@ -26,9 +27,8 @@
     \/ - шаблон для ползунков
 \/ 6) вывод отдельных параметров по аргументам
     \/ - обработка длинных опций
-7) отправка по интернет
+\/ 7) отправка по интернет
     \/ - переделать систему запрос-ответ
-    - порядок переданных аргументов
     \/ - комбинация аргументов w+s
 8) граф. режим (ncurses)
 
