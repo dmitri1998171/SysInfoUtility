@@ -5,33 +5,34 @@
 void cpu_sys_info() {
 	char str[15];
 
-	openFile("/proc/loadavg", 'r');
-	fgets(str, 15, fp);
-	fclose(fp);
-
-	strcpy(sys_info.cpuavg, str);
-	char *ptr = strtok(str, " ");
-    sys_info.cpu_load = atof(ptr);
+	if ((fp = fopen("/proc/loadavg", "r")) != NULL) {
+		fgets(str, 15, fp);
+		strcpy(sys_info.cpuavg, str);
+		char *ptr = strtok(str, " ");
+		sys_info.cpu_load = atof(ptr);
+		fclose(fp);
+	}
 }
 
 void mem_info() {
 	char str[ARR_SIZE];
 
-    openFile("/proc/meminfo", 'r');
-    while (fgets(str, ARR_SIZE, fp)) {
-        if(strstr(str, "MemTotal"))
-			get_number_from_str(parsing(str, " "), &mem.memTotal);
-        if(strstr(str, "MemAvailable"))
-			get_number_from_str(parsing(str, " "), &mem.memAvail);
-        if(strstr(str, "SwapTotal"))
-			get_number_from_str(parsing(str, " "), &mem.swapTotal);
-        if(strstr(str, "SwapFree")) {
-			int tmp = 0;
-			get_number_from_str(parsing(str, " "), &tmp);
-			mem.swapAvail = mem.swapTotal - tmp;
+    if ((fp = fopen("/proc/meminfo", "r")) != NULL) {
+		while (fgets(str, ARR_SIZE, fp)) {
+			if(strstr(str, "MemTotal"))
+				get_number_from_str(parsing(str, " "), &mem.memTotal);
+			if(strstr(str, "MemAvailable"))
+				get_number_from_str(parsing(str, " "), &mem.memAvail);
+			if(strstr(str, "SwapTotal"))
+				get_number_from_str(parsing(str, " "), &mem.swapTotal);
+			if(strstr(str, "SwapFree")) {
+				int tmp = 0;
+				get_number_from_str(parsing(str, " "), &tmp);
+				mem.swapAvail = mem.swapTotal - tmp;
+			}
 		}
-    }
-    fclose(fp);
+		fclose(fp);
+	}
 }
 
 void gpu_sys_info() {
@@ -75,54 +76,56 @@ void get_sys_info() {
 void version_info() {
 	char str[ARR_SIZE];
 
-    openFile("/proc/version", 'r');
-    fgets(str, ARR_SIZE-14, fp);
-    fclose(fp);
-    
-    char *ptr = strtok(str, "Linux version ");
-    strcpy(hard_info.version, ptr);
+    if ((fp = fopen("/proc/version", "r")) != NULL) {
+		fgets(str, ARR_SIZE-14, fp);
+		char *ptr = strtok(str, "Linux version ");
+		strcpy(hard_info.version, ptr);
+		fclose(fp);
+	}
 }
 
 void network_interaces() {
 	system("ls /sys/class/net >> ./tmp.txt");
 
-	openFile("tmp.txt", 'r');
-
-        // очистка массива для перезаписи
-    memset(hard_info.net_int[ARR_SIZE], 0, ARR_SIZE);    
-    
-	while (!feof(fp)){
-		fscanf(fp, "%s", hard_info.net_int[hard_info.count]);
-		hard_info.count++;
+	if ((fp = fopen("tmp.txt", "r")) != NULL) {
+			// очистка массива для перезаписи
+		memset(hard_info.net_int[ARR_SIZE], 0, ARR_SIZE);    
+		
+		while (!feof(fp)){
+			fscanf(fp, "%s", hard_info.net_int[hard_info.count]);
+			hard_info.count++;
+		}
+		// исключает ошибку feof - дублирует последнюю строку
+		hard_info.count -= 1;
+		fclose(fp);
+		system("rm ./tmp.txt");
 	}
-	// исключает ошибку feof - дублирует последнюю строку
-    hard_info.count -= 1;
-	fclose(fp);
-	system("rm ./tmp.txt");
 }
 
 void cpu_hard_info() {
 	char str[ARR_SIZE];
 
-	openFile("/proc/cpuinfo", 'r');
-	while(fgets(str, ARR_SIZE, fp)) {
-		if(strstr(str, "model name")) {
-			char *d = parsing(str, ":");
-			strcpy(hard_info.cpu, d);
+	if ((fp = fopen("/proc/cpuinfo", "r")) != NULL) {
+		while(fgets(str, ARR_SIZE, fp)) {
+			if(strstr(str, "model name")) {
+				char *d = parsing(str, ":");
+				strcpy(hard_info.cpu, d);
+			}
+			if(strstr(str, "cpu cores")) {
+				char *p = parsing(str, ":");
+				hard_info.cpu_cores = atoi(p);
+				break;
+			}
 		}
-		if(strstr(str, "cpu cores")) {
-			char *p = parsing(str, ":");
-			hard_info.cpu_cores = atoi(p);
-			break;
-		}
+		fclose(fp);
 	}
-	fclose(fp);
 }
 
 void resolution() {
-	openFile("/sys/class/graphics/fb0/virtual_size", 'r');
-    fgets(hard_info.resolution, ARR_SIZE/4, fp);
-    fclose(fp);
+	if ((fp = fopen("/sys/class/graphics/fb0/virtual_size", "r")) != NULL) {
+		fgets(hard_info.resolution, ARR_SIZE/4, fp);
+		fclose(fp);
+	}
 }
 
 void get_hard_info() {

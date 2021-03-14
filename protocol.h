@@ -46,7 +46,6 @@ struct graph_strings {
 	float string_load[6];			  // Загруженность 
 }graph_strings;
 
-void openFile(char name[], char attr);
 char* parsing(char *str, char *symbol);
 void get_number_from_str(char* str, int* value);
 

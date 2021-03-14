@@ -16,13 +16,6 @@ void graph_strings_Func() {
 	graph_strings.string_load[5] = sys_info.gpuavg / 10;
 }
 
-void openFile(char name[], char attr) {
-	if ((fp = fopen(name, &attr)) == NULL) {
-		printf("Не удалось открыть файл %s\n", name);
-		exit(-1);
-	}
-}
-
 char* parsing(char *str, char *symbol) {
 	char *p = strtok(str, symbol);
 	p = strtok(NULL, symbol);
@@ -67,27 +60,29 @@ void out() {
 }
 
 void write_to_log() {
-	char filename[] = {"sysInfo.log"};
-	openFile(filename, 'w');
+	if ((fp = fopen("sysInfo.log", "w")) != NULL) {
+		fprintf(fp, "Version: %s\n", hard_info.version);
+		fprintf(fp, "Network interfaces: ");
+		
+		for(int i = 0; i < hard_info.count; i++)	
+			fprintf(fp, "%s ", hard_info.net_int[i]);
 
-	fprintf(fp, "Version: %s\n", hard_info.version);
-    fprintf(fp, "Network interfaces: ");
-	
-	for(int i = 0; i < hard_info.count; i++)	
-		fprintf(fp, "%s ", hard_info.net_int[i]);
+		fprintf(fp, "\nCPU:\t%s\n", hard_info.cpu);
+		fprintf(fp, "CPU CORES:\t%i\n", hard_info.cpu_cores);
+		fprintf(fp, "GPU: \n");
+		fprintf(fp, "RAM: %i Mb\n", mem.memTotal);
+		fprintf(fp, "Swap: %i Mb\n\n", mem.swapTotal);
 
-	fprintf(fp, "\nCPU:\t%s\n", hard_info.cpu);
-	fprintf(fp, "CPU CORES:\t%i\n", hard_info.cpu_cores);
-	fprintf(fp, "GPU: \n");
-	fprintf(fp, "RAM: %i Mb\n", mem.memTotal);
-	fprintf(fp, "Swap: %i Mb\n\n", mem.swapTotal);
-
-	fprintf(fp, "CPU avg: %s\n", sys_info.cpuavg);
-	fprintf(fp, "GPU:\n");
-	fprintf(fp, "RAM: %i / %i Mb\n", mem.memAvail, mem.memTotal);
-	fprintf(fp, "Swap: %i / %i Mb\n", mem.swapAvail, mem.swapTotal);
-	fprintf(fp, "CPU temp: %i C\n\n", sys_info.cpu_temp_mid);
-	fclose(fp);
+		fprintf(fp, "CPU avg: %s\n", sys_info.cpuavg);
+		fprintf(fp, "GPU:\n");
+		fprintf(fp, "RAM: %i / %i Mb\n", mem.memAvail, mem.memTotal);
+		fprintf(fp, "Swap: %i / %i Mb\n", mem.swapAvail, mem.swapTotal);
+		fprintf(fp, "CPU temp: %i C\n\n", sys_info.cpu_temp_mid);
+		fclose(fp);
+	}
+	else {
+		DieWithError("Could not open sysInfo.log file");
+	}
 }
 
 void generate_html() {
