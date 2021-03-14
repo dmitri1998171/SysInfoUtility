@@ -35,33 +35,32 @@ void mem_info() {
 }
 
 void gpu_sys_info() {
-	char str[73];
+	char *value;
+	char str[ARR_SIZE];
 
-	FILE* f = popen("dmesg | grep \'graphics memory\'", "r");
-	// FILE* f = popen("/var/log/syslog.1", "r");
-    if (f) 
-		fgets(str, 73, f);
-	pclose(f);
-    	
-	char *value = strstr(str, "graphics memory: ");
-	value = strstr(value, " ");
-	value = strtok(value, " ");
-
-	sys_info.gpuavg = atoi(value) / 1000 / 13.9;	// ???
-	// https://habr.com/ru/post/193256/
+	if ((fp = fopen("/var/log/syslog.1", "r")) != NULL) {
+		while (fgets(str, ARR_SIZE, fp)) {
+			if(value = strstr(str, "graphics memory: ")) {
+				value = strstr(value, " ");
+				value = strtok(value, " ");
+				sys_info.gpuavg = atoi(value) / 1000 / 13.9;
+			}
+		}
+    	fclose(fp);
+	}
 }
 
 void cpu_temp_info() {
-	char name2[] = "/sys/devices/platform/coretemp.0/hwmon/hwmon5/temp1_input";
 	char str[15];
 
-	openFile(name2, 'r');
-	fgets(str, 15, fp);
-	fclose(fp);
+	if((fp = fopen("/sys/devices/platform/coretemp.0/hwmon/hwmon5/temp1_input", "r")) != NULL) {
+		fgets(str, 15, fp);
 
-//	strcpy(sys_info.cpuavg, str);
-//	char *ptr = strtok(str, " ");
-     	sys_info.cpu_temp_mid = atoi(str) / 1000;
+	//	strcpy(sys_info.cpuavg, str);
+	//	char *ptr = strtok(str, " ");
+		sys_info.cpu_temp_mid = atoi(str) / 1000;
+		fclose(fp);
+	}
 }
 
 void get_sys_info() {
@@ -87,8 +86,7 @@ void version_info() {
 void network_interaces() {
 	system("ls /sys/class/net >> ./tmp.txt");
 
-	char name0[] = "tmp.txt";
-	openFile(name0, 'r');
+	openFile("tmp.txt", 'r');
 
         // очистка массива для перезаписи
     memset(hard_info.net_int[ARR_SIZE], 0, ARR_SIZE);    
@@ -104,10 +102,9 @@ void network_interaces() {
 }
 
 void cpu_hard_info() {
-	char name3[] = "/proc/cpuinfo";
 	char str[ARR_SIZE];
 
-	openFile(name3, 'r');
+	openFile("/proc/cpuinfo", 'r');
 	while(fgets(str, ARR_SIZE, fp)) {
 		if(strstr(str, "model name")) {
 			char *d = parsing(str, ":");

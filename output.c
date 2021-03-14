@@ -17,9 +17,10 @@ void graph_strings_Func() {
 }
 
 void openFile(char name[], char attr) {
-	if ((fp = fopen(name, &attr)) == NULL){
-		printf("Не удалось открыть файл\n");
-		exit(-1);}
+	if ((fp = fopen(name, &attr)) == NULL) {
+		printf("Не удалось открыть файл %s\n", name);
+		exit(-1);
+	}
 }
 
 char* parsing(char *str, char *symbol) {
