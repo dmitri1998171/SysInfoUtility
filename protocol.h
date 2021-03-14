@@ -29,6 +29,7 @@ struct sys_info {
 	float cpu_load;	  	  // Нагрузка процессора
 	char cpuavg[15];	  // Нагрузка процессора
 	int gpuavg;			  // Объем видеопамяти
+	int cpu_temp_mid;		// cpu temp
 }sys_info;
 
 struct hard_info {

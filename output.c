@@ -46,7 +46,8 @@ void current_values_output() {
 	printf("CPU avg: %s\n", sys_info.cpuavg);
 	printf("GPU: %i Mb\n", sys_info.gpuavg);
 	printf("RAM: %i / %i Mb\n", mem.memAvail, mem.memTotal);
-	printf("Swap: %i / %i Mb\n\n", mem.swapAvail, mem.swapTotal);
+	printf("Swap: %i / %i Mb\n", mem.swapAvail, mem.swapTotal);
+	printf("CPU temp: %i C\n\n", sys_info.cpu_temp_mid);
 }
 
 void out() {
@@ -78,13 +79,13 @@ void write_to_log() {
 	fprintf(fp, "CPU CORES:\t%i\n", hard_info.cpu_cores);
 	fprintf(fp, "GPU: \n");
 	fprintf(fp, "RAM: %i Mb\n", mem.memTotal);
-	fprintf(fp, "Swap: %i Mb\n", mem.swapTotal);
+	fprintf(fp, "Swap: %i Mb\n\n", mem.swapTotal);
 
 	fprintf(fp, "CPU avg: %s\n", sys_info.cpuavg);
 	fprintf(fp, "GPU:\n");
 	fprintf(fp, "RAM: %i / %i Mb\n", mem.memAvail, mem.memTotal);
 	fprintf(fp, "Swap: %i / %i Mb\n", mem.swapAvail, mem.swapTotal);
-
+	fprintf(fp, "CPU temp: %i C\n\n", sys_info.cpu_temp_mid);
 	fclose(fp);
 }
 
