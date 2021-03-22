@@ -1,4 +1,4 @@
-#include "protocol.h"   
+#include "../include/protocol.h"   
 
 void graph_strings_Func() {
 	strcpy(graph_strings.string_name[0], "HDD/SSD load");
@@ -99,7 +99,7 @@ void generate_html() {
     fprintf(fdst, "<html>\n");
 	fprintf(fdst, "\t<head>\n");
 	fprintf(fdst, "\t\t<title>logfile.html</title>\n");
-	fprintf(fdst, "\t\t<link rel=\"stylesheet\" href=\"style.css\"></link>\n");
+	fprintf(fdst, "\t\t<link rel=\"stylesheet\" href=\"include/style.css\"></link>\n");
 	fprintf(fdst, "\t</head>\n");
     fprintf(fdst, "\t<body>\n");
 	fprintf(fdst, "\t\t<div class=\"bg_block\">\n");
@@ -123,10 +123,10 @@ void generate_html() {
         	fprintf(fdst, "<div class=\"subblock\"><br></div>\n");
 
 		fprintf(fdst, "\t\t\t\t<div class=\"subblock\">\n");
-		fprintf(fdst, "\t\t\t\t<table  width=\"100%\">\n");
+		fprintf(fdst, "\t\t\t\t<table  width=\"100%%\">\n");
 		fprintf(fdst, "\t\t\t\t\t<tr>\n");
 
-		fprintf(fdst, "\t\t\t\t\t<td class=\"td_line\" width=\"80%\"> <hr style=\"width: %f%;\"> </td>\n", graph_strings.string_load[i]);
+		fprintf(fdst, "\t\t\t\t\t<td class=\"td_line\" width=\"80%%\"> <hr style=\"width: %f%%;\"> </td>\n", graph_strings.string_load[i]);
 		fprintf(fdst, "\t\t\t\t\t<td align=\"center\"> %s </td>\n", graph_strings.string_name[i]);
 		
 		fprintf(fdst, "\t\t\t\t\t</tr>\n");

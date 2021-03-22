@@ -1,4 +1,4 @@
-#include "protocol.h"   
+#include "include/protocol.h"   
 
 void ClientTCPWay(char *serverIP, int port, int client_state) {
     char getInfo[20] = "GET_SYSTEM_INFO";

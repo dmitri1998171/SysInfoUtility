@@ -1,4 +1,4 @@
-#include "protocol.h"   
+#include "../include/protocol.h"   
 
 int main(int argc, char *argv[]) {
 	if(argc == 1)

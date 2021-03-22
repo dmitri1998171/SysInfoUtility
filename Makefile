@@ -1,15 +1,15 @@
 BIN_1 := main 
 BIN_2 := client
-SOURCES_1 := main.c
-SOURCES_2 := client.c
-DEPENDENCIES = output.c get_info.c network.c
+SOURCES_1 := src/main.c
+SOURCES_2 := src/client.c
+DEPENDENCIES = src/output.c src/get_info.c src/network.c
 CC := gcc
 CFLAGS := -g
 LDFLAGS := -lpthread
 
 $(BIN_1): $(SOURCES_1) $(DEPENDENCIES)
-	clear && $(CC) $(SOURCES_1) $(DEPENDENCIES) $(CFLAGS) $(LDFLAGS) -o $(BIN_1)
+	clear && mkdir -p bin && $(CC) $(SOURCES_1) $(DEPENDENCIES) $(CFLAGS) $(LDFLAGS) -o bin/$(BIN_1)
 $(BIN_2): $(SOURCES_2) $(DEPENDENCIES)
-	clear && $(CC) $(SOURCES_2) $(DEPENDENCIES) $(CFLAGS) $(LDFLAGS) -o $(BIN_2)
+	clear && mkdir -p bin && $(CC) $(SOURCES_2) $(DEPENDENCIES) $(CFLAGS) $(LDFLAGS) -o bin/$(BIN_2)
 clean:
-	rm -rf $(BIN_1) $(BIN_2)
+	rm -rf bin
