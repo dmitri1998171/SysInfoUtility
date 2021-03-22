@@ -106,6 +106,7 @@ void generate_html() {
 	fprintf(fdst, "\t\t\t<div class=\"block\">\n");
 	fprintf(fdst, "\t\t\t\t<div class=\"subblock\" style=\"padding-bottom: 14px;\">\n");
 	
+	// Левая колнка - текст. инфа
     while(fgets(str, ARR_SIZE, fsrc)) {
 		if(strstr(str, "CPU avg:")) { // Отделение текущ. инфы в отдельный блок
 			fprintf(fdst, "\t\t\t\t</div>\n");
@@ -118,6 +119,7 @@ void generate_html() {
     fprintf(fdst, "\t\t\t</div>\n");
 	fprintf(fdst, "\t\t\t<div class=\"block\">\n");
 
+	// Правая колонка - ползунки
 	for(int i = 0; i < 6; i++) {
 		if(i == 3)
         	fprintf(fdst, "<div class=\"subblock\"><br></div>\n");
@@ -126,7 +128,15 @@ void generate_html() {
 		fprintf(fdst, "\t\t\t\t<table  width=\"100%%\">\n");
 		fprintf(fdst, "\t\t\t\t\t<tr>\n");
 
-		fprintf(fdst, "\t\t\t\t\t<td class=\"td_line\" width=\"80%%\"> <hr style=\"width: %f%%;\"> </td>\n", graph_strings.string_load[i]);
+		// Смена цвета ползунков
+		fprintf(fdst, "\t\t\t\t\t<td class=\"td_line\" width=\"80%%\"> ");
+		if(graph_strings.string_load[i] > 50)
+			fprintf(fdst, "<hr style=\" background-color: yellow;");
+		else if(graph_strings.string_load[i] > 85)
+			fprintf(fdst, "<hr style=\" background-color: red;");
+		else fprintf(fdst, "<hr style=\"");
+		fprintf(fdst, "width: %f%%;\"> </td>\n", graph_strings.string_load[i]);
+		
 		fprintf(fdst, "\t\t\t\t\t<td align=\"center\"> %s </td>\n", graph_strings.string_name[i]);
 		
 		fprintf(fdst, "\t\t\t\t\t</tr>\n");

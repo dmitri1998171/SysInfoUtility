@@ -1,5 +1,6 @@
 /bin
 /.vscode
-SysInfo.log
-tmp.txt
+sysInfo.log
+logfile.html
 TODO.txt
+tmp.txt

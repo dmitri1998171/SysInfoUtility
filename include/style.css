@@ -42,8 +42,8 @@ hr {
     float: left;
     position: relative;
     border: none; /* Убираем границу */
-    background-color: red; /* Цвет линии */
-    color: red; /* Цвет линии для IE6-7 */
+    background-color: green; /* Цвет линии */
+    color: green; /* Цвет линии для IE6-7 */
     height: 20px; /* Толщина линии */
     /* width: 100%; */
 }
