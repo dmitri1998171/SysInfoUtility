@@ -30,13 +30,12 @@ void get_number_from_str(char* str, int* value) {
 
 // ##### OUTPUT #############################
 
-void DieWithError(char *errorMessage)
-{
+void DieWithError(char *errorMessage) {
     printf("\nERROR: %s\n\n", errorMessage);
     exit(1);
 }
 
-void current_values_output() {
+void system_info_output() {
 	printf("CPU avg: %s\n", sys_info.cpuavg);
 	printf("GPU: %i Mb\n", sys_info.gpuavg);
 	printf("RAM: %i / %i Mb\n", mem.memAvail, mem.memTotal);
@@ -44,7 +43,7 @@ void current_values_output() {
 	printf("CPU temp: %i C\n\n", sys_info.cpu_temp_mid);
 }
 
-void out() {
+void hardware_info_output() {
     printf("Version: %s\n", hard_info.version);
     printf("Network interfaces: ");
 	
@@ -157,8 +156,50 @@ void full_output() {
 	get_sys_info();				// сбор текущих значений
     
 	printf("\n\tSystem information\n\n");
-	out();						// Вывод хар-к ПК
+	hardware_info_output();						// Вывод хар-к ПК
 	printf("-------------------------------\n\n");
-	current_values_output();	// Вывод текущих значений
+	system_info_output();	// Вывод текущих значений
 }
 
+void ncurses_sys_output(int line_pos) {
+	mvprintw(line_pos, 1,     "CPU avg: %s\n", sys_info.cpuavg);
+	mvprintw(line_pos + 1, 1, "GPU: %i Mb\n", sys_info.gpuavg);
+	mvprintw(line_pos + 2, 1, "RAM: %i / %i Mb\n", mem.memAvail, mem.memTotal);
+	mvprintw(line_pos + 3, 1, "Swap: %i / %i Mb\n", mem.swapAvail, mem.swapTotal);
+	mvprintw(line_pos + 4, 1, "CPU temp: %i C\n\n", sys_info.cpu_temp_mid);
+	
+}
+
+void ncurses_hw_output(int line_pos) {
+	mvprintw(line_pos, 1,     "Version: %s\n", hard_info.version);
+    mvprintw(line_pos + 1, 1, "Network interfaces: ");
+	
+	for(int i=0; i < hard_info.count; i++)	
+		mvprintw(line_pos + 2, i+10, "%s ", hard_info.net_int[i]);
+	
+	mvprintw(line_pos + 3, 1, "CPU: %s\n", hard_info.cpu);
+	mvprintw(line_pos + 4, 1, "CPU CORES: %i\n", hard_info.cpu_cores);
+	mvprintw(line_pos + 5, 1, "GPU: \n");
+	mvprintw(line_pos + 6, 1, "Resolution: %s", hard_info.resolution);
+	mvprintw(line_pos + 7, 1, "RAM: %i Mb\n", mem.memTotal);
+	mvprintw(line_pos + 8, 1, "Swap: %i Mb\n\n", mem.swapTotal);
+
+}
+
+void ncurses_background() {
+	initscr();
+    curs_set(0);
+	noecho();
+	cbreak();
+
+	get_hard_info();			// сбор хар-к ПК
+	get_sys_info();				// сбор текущих значений
+
+	ncurses_hw_output(1);
+	ncurses_sys_output(11);
+	mvprintw(LINES - 1, 1, " F1 - Quit");
+	refresh();
+
+	getchar();
+	endwin();
+}

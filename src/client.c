@@ -24,24 +24,24 @@ void ClientTCPWay(char *serverIP, int port, int client_state) {
             DieWithError("recv() failed.");
         if ((recv(sock, &mem, sizeof(mem), 0)) < 0)
             DieWithError("recv() failed.");
-        out();
+        hardware_info_output();
         if ((recv(sock, &sys_info, sizeof(sys_info), 0)) < 0)
             DieWithError("recv() failed.");
-        current_values_output();
+        system_info_output();
     }
     if(client_state == 1) {
         if ((recv(sock, &hard_info, sizeof(hard_info), 0)) < 0)
             DieWithError("recv() failed.");
         if ((recv(sock, &mem, sizeof(mem), 0)) < 0)
             DieWithError("recv() failed.");
-        out();
+        hardware_info_output();
     }
     if(client_state == 2) {
         if ((recv(sock, &sys_info, sizeof(sys_info), 0)) < 0)
             DieWithError("recv() failed.");
         if ((recv(sock, &mem, sizeof(mem), 0)) < 0)
             DieWithError("recv() failed.");
-        current_values_output();
+        system_info_output();
     }
 
     close(sock);
@@ -50,7 +50,7 @@ void ClientTCPWay(char *serverIP, int port, int client_state) {
 void ClientUDPWay(char *serverIP, int port) {
     char getInfo[20] = "GET_SYSTEM_INFO";
     int echoStringLen, sock;               /* Length of string to echo */
-    unsigned int fromSize;           /* In-out of address size for recvfrom() */
+    unsigned int fromSize;           /* In-hardware_info_output of address size for recvfrom() */
     struct sockaddr_in echoServAddr;        /* Echo server address */
     struct sockaddr_in fromAddr;     /* Source address of echo */
 
@@ -59,7 +59,7 @@ void ClientUDPWay(char *serverIP, int port) {
         DieWithError("socket() failed");
 
     /* Construct the server address structure */
-    memset(&echoServAddr, 0, sizeof(echoServAddr));    /* Zero out structure */
+    memset(&echoServAddr, 0, sizeof(echoServAddr));    /* Zero hardware_info_output structure */
     echoServAddr.sin_family = AF_INET;                 /* Internet addr family */
     echoServAddr.sin_addr.s_addr = inet_addr(serverIP);  /* Server IP address */
     echoServAddr.sin_port   = htons(port);     /* Server port */
@@ -81,8 +81,8 @@ void ClientUDPWay(char *serverIP, int port) {
         exit(1);
     }
 
-    current_values_output();
-	// out();      // вывод на экран
+    system_info_output();
+	// hardware_info_output();      // вывод на экран
 
     close(sock);
     exit(0);

@@ -11,16 +11,20 @@ int main(int argc, char *argv[]) {
 			{"log", 0, 0, 'l'},
 			{"html", 0, 0, 'h'},
 			{"network", 1, 0, 'n'},
+			{"graphic", 1, 0, 'g'},
 			{"help", 0, 0, '?'},
 			{0,0,0,0}
 		};
 
-		while ((res = getopt_long(argc,argv,"wslhn?", long_opt, &optIdx)) != -1) {
+		while ((res = getopt_long(argc,argv,"wslhng?", long_opt, &optIdx)) != -1) {
 			switch(res) {
-				case 'w': { get_hard_info(); out(); state += 1; break; }	// Вывод хар-к ПК
-				case 's': { get_sys_info(); current_values_output(); state += 2; break; }	// Вывод текущ. знач.
+				case 'w': { get_hard_info(); hardware_info_output(); state += 1; break; }	// Вывод хар-к ПК
+				case 's': { get_sys_info(); system_info_output(); state += 2; break; }	// Вывод текущ. знач.
 				case 'l': { full_output(); write_to_log(); break; }	// Запись в лог
 				case 'h': { full_output(); write_to_log(); generate_html(); break; }	// Запись в html
+				case 'g': { ncurses_background(); 
+				// full_output();
+				 break; }
 				case 'n': { 
 					char type_proto[3];
 					int port, client_count;

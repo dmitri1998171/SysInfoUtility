@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <ncurses.h>
 
 #define ARR_SIZE 50
 #define ECHOMAX 32
@@ -66,11 +67,12 @@ void get_hard_info();
 // ##### OUTPUT ############################
 
 void DieWithError(char *errorMessage);
-void current_values_output();
-void out();
+void system_info_output();
+void hardware_info_output();
 void write_to_log();
 void generate_html();
 void full_output();
+void ncurses_background();
 
 // ##### NETWORK ###########################
 
