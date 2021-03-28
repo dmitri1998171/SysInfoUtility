@@ -22,10 +22,8 @@ int main(int argc, char *argv[]) {
 				case 's': { get_sys_info(); system_info_output(); state += 2; break; }	// Вывод текущ. знач.
 				case 'l': { full_output(); write_to_log(); break; }	// Запись в лог
 				case 'h': { full_output(); write_to_log(); generate_html(); break; }	// Запись в html
-				case 'g': { ncurses_background(); 
-				// full_output();
-				 break; }
-				case 'n': { 
+				case 'g': { ncurses_background(); break; }
+				case 'n': { 				// Отправка удаленному клиенту
 					char type_proto[3];
 					int port, client_count;
 					
@@ -54,7 +52,7 @@ int main(int argc, char *argv[]) {
 					}
 					else DieWithError("Unknown protocol type");
 
-					break; }	// Отправка удаленному клиенту
+					break; }	
 				case '?': { printf("\n Usage: %s [OPTION]\n\n -w, --hard_info print hardware information\n -s, --sys_info  print system information\n -l, --log       output to \'sysInfo.log\' file\n -h, --html\t output to html\n -n, --network   send info to remote client\n -?, --help\t print this help\n\n By default, without options, the utility displays hardware and system information together\n\n", argv[0]); break; }
 			}
 		}

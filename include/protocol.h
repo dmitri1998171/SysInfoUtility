@@ -11,7 +11,7 @@
 #define ARR_SIZE 50
 
 FILE *fp;
-pthread_mutex_t mutex;
+pthread_mutex_t mutex, ncurses_mutex;
 struct ThreadArgs *threadArgs;
 
 struct ThreadArgs{
@@ -29,12 +29,12 @@ struct sys_info {
 	float cpu_load;	  	  // Нагрузка процессора
 	char cpuavg[15];	  // Нагрузка процессора
 	int gpuavg;			  // Объем видеопамяти
-	int cpu_temp_mid;		// cpu temp
+	int cpu_temp_avg;	  // cpu temp
 }sys_info;
 
 struct hard_info {
     char version[ARR_SIZE];      	  // Версия ядра линукс
-	char net_int[12][7]; 			  // Сетевые интерфейсы
+	char net_int[2][7]; 			  // Сетевые интерфейсы
 	char cpu[ARR_SIZE];			 	  // Процессор
 	int cpu_cores;		 	 		  // Кол-во ядер
 	unsigned int count;	  			  // Кол-во сетев. инетерфейсов

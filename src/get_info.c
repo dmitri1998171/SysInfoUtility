@@ -59,7 +59,7 @@ void cpu_temp_info() {
 
 	//	strcpy(sys_info.cpuavg, str);
 	//	char *ptr = strtok(str, " ");
-		sys_info.cpu_temp_mid = atoi(str) / 1000;
+		sys_info.cpu_temp_avg = atoi(str) / 1000;
 		fclose(fp);
 	}
 }

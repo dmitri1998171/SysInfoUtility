@@ -104,10 +104,8 @@ void TCPWay(int port, int client_count, pthread_t* threadID) {
             if (pthread_create(&threadID[i], NULL, ThreadMainTCP, (void *) threadArgs) != 0)
                 DieWithError("pthread_create() failed");
             
-            if(pthread_join(threadID[i], NULL) != 0) {
-                perror("Joining the second thread");
-                exit(-1);
-            }
+            if(pthread_join(threadID[i], NULL) != 0) 
+                DieWithError("Joining the second thread");
         }
     }
 }

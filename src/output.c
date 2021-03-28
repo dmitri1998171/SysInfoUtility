@@ -40,7 +40,7 @@ void system_info_output() {
 	printf("GPU: %i Mb\n", sys_info.gpuavg);
 	printf("RAM: %i / %i Mb\n", mem.memAvail, mem.memTotal);
 	printf("Swap: %i / %i Mb\n", mem.swapAvail, mem.swapTotal);
-	printf("CPU temp: %i C\n\n", sys_info.cpu_temp_mid);
+	printf("CPU temp: %i C\n\n", sys_info.cpu_temp_avg);
 }
 
 void hardware_info_output() {
@@ -76,7 +76,7 @@ void write_to_log() {
 		fprintf(fp, "GPU:\n");
 		fprintf(fp, "RAM: %i / %i Mb\n", mem.memAvail, mem.memTotal);
 		fprintf(fp, "Swap: %i / %i Mb\n", mem.swapAvail, mem.swapTotal);
-		fprintf(fp, "CPU temp: %i C\n\n", sys_info.cpu_temp_mid);
+		fprintf(fp, "CPU temp: %i C\n\n", sys_info.cpu_temp_avg);
 		fclose(fp);
 	}
 	else {
@@ -166,19 +166,19 @@ void ncurses_sys_output(int line_pos) {
 	mvprintw(line_pos + 1, 1, "GPU: %i Mb\n", sys_info.gpuavg);
 	mvprintw(line_pos + 2, 1, "RAM: %i / %i Mb\n", mem.memAvail, mem.memTotal);
 	mvprintw(line_pos + 3, 1, "Swap: %i / %i Mb\n", mem.swapAvail, mem.swapTotal);
-	mvprintw(line_pos + 4, 1, "CPU temp: %i C\n\n", sys_info.cpu_temp_mid);
+	mvprintw(line_pos + 4, 1, "CPU temp: %i C\n\n", sys_info.cpu_temp_avg);
 }
 
 void ncurses_hw_output(int line_pos) {
 	mvprintw(line_pos, 1, "Version: %s\n", hard_info.version);
 		
     mvprintw(line_pos + 1, 1, "Network interfaces:");
-	move(line_pos + 1, 20);
-	for(int i = 0; i < hard_info.count; i++) {
-		addch(' ');
-		for(int j = 0; j < strlen(hard_info.net_int[i]); j++) 
-			addch(hard_info.net_int[i][j]);
-	}
+	// move(line_pos + 1, 20);
+	// for(int i = 0; i < hard_info.count; i++) {
+	// 	addch(' ');
+	// 	for(int j = 0; j < strlen(hard_info.net_int[i]); j++) 
+	// 		addch(hard_info.net_int[i][j]);
+	// }
 	
 	mvprintw(line_pos + 2, 1, "CPU: %s\n", hard_info.cpu);
 	mvprintw(line_pos + 3, 1, "CPU CORES: %i\n", hard_info.cpu_cores);
@@ -188,20 +188,51 @@ void ncurses_hw_output(int line_pos) {
 	mvprintw(line_pos + 7, 1, "Swap: %i Mb\n\n", mem.swapTotal);
 }
 
+void *ncurses_output() {
+	get_hard_info();			// сбор хар-к ПК
+	
+	while(1) {
+		get_sys_info();				// сбор текущих значений
+
+		ncurses_hw_output(1);
+		ncurses_sys_output(10);
+		mvprintw(LINES - 1, 1, " ESC - Quit");
+		refresh();
+		sleep(1);
+	}
+	return (NULL);
+}
+
+void *ncurses_input(void *threadArgs) {
+	pthread_t* output_tid = (pthread_t*) threadArgs;
+	int value;
+
+	// Если нажата клавиша ESCAPE - закрываем поток вывода ncurses_output
+	while(value != KEY_F(1)) value = wgetch(stdscr);
+	pthread_cancel(*output_tid);
+	
+	return (NULL);
+}
+
 void ncurses_background() {
 	initscr();
     curs_set(0);
 	noecho();
-	cbreak();
+	keypad(stdscr, TRUE);
+	
+	pthread_mutex_init(&ncurses_mutex, NULL);
+	pthread_t* threadID = (pthread_t*) malloc(2 * sizeof(pthread_t));
+					
+	if(pthread_create(&threadID[0], NULL, ncurses_output, NULL) != 0)
+		DieWithError("pthread_create() failed");
+	if(pthread_create(&threadID[1], NULL, ncurses_input, &threadID[0]) != 0)
+		DieWithError("pthread_create() failed");
+            
+	if(pthread_join(threadID[0], NULL) != 0) 
+		DieWithError("Joining the first ncurses_thread");
+	if(pthread_join(threadID[1], NULL) != 0) 
+		DieWithError("Joining the second ncurses_thread");
 
-	get_hard_info();			// сбор хар-к ПК
-	get_sys_info();				// сбор текущих значений
-
-	ncurses_hw_output(1);
-	ncurses_sys_output(10);
-	mvprintw(LINES - 1, 1, " F1 - Quit");
-	refresh();
-
-	getchar();
+	pthread_mutex_destroy(&ncurses_mutex);
 	endwin();
 }
