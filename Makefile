@@ -4,7 +4,7 @@ SOURCES_1 := src/main.c
 SOURCES_2 := src/client.c
 DEPENDENCIES = src/output.c src/get_info.c src/network.c
 CC := gcc
-CFLAGS := -g
+CFLAGS := -g 
 LDFLAGS := -lpthread -lncurses
 
 $(BIN_1): $(SOURCES_1) $(DEPENDENCIES)

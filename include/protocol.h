@@ -9,7 +9,6 @@
 #include <ncurses.h>
 
 #define ARR_SIZE 50
-#define ECHOMAX 32
 
 FILE *fp;
 pthread_mutex_t mutex;
@@ -35,7 +34,7 @@ struct sys_info {
 
 struct hard_info {
     char version[ARR_SIZE];      	  // Версия ядра линукс
-	char net_int[ARR_SIZE][ARR_SIZE]; // Сетевые интерфейсы
+	char net_int[12][7]; 			  // Сетевые интерфейсы
 	char cpu[ARR_SIZE];			 	  // Процессор
 	int cpu_cores;		 	 		  // Кол-во ядер
 	unsigned int count;	  			  // Кол-во сетев. инетерфейсов

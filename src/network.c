@@ -3,8 +3,6 @@
 // ##### NETWORK ############################
 
 void *ThreadMainTCP(void *threadArgs) {
-    char echoBuffer[ECHOMAX];
-    unsigned int cliAddrLen;
     int clntSock, recvMsgSize, client_state = 0;
 
     clntSock = ((struct ThreadArgs *) threadArgs) -> clntSock;
@@ -48,9 +46,8 @@ void *ThreadMainTCP(void *threadArgs) {
 }
 
 void *ThreadMainUDP(void *threadArgs) {
-    char echoBuffer[ECHOMAX];
-    int clntSock, recvMsgSize, sendTmp, client_state = 0;
     unsigned int cliAddrLen;
+    int clntSock, recvMsgSize, sendTmp, client_state = 0;
     struct sockaddr_in echoClntAddr;        
     
     clntSock = ((struct ThreadArgs *) threadArgs) -> clntSock;
@@ -118,7 +115,6 @@ void TCPWay(int port, int client_count, pthread_t* threadID) {
 void UDPWay(int port, int client_count, pthread_t* threadID) {
     int sock;
     struct sockaddr_in echoServAddr;
-    struct sockaddr_in echoClntAddr;
 
     if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
         DieWithError("socket() failed");
