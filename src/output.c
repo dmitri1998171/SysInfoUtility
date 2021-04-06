@@ -16,9 +16,10 @@ void graph_strings_Func() {
 	graph_strings.string_load[5] = sys_info.gpuavg / 10;
 }
 
-char* parsing(char *str, char *symbol) {
+char* parsing(char *str, char *symbol, int count) {
 	char *p = strtok(str, symbol);
-	p = strtok(NULL, symbol);
+	for(int i = 0; i < count; i++)
+		p = strtok(NULL, symbol);
 	return p;
 }
 
@@ -47,15 +48,35 @@ void hardware_info_output() {
     printf("Version: %s\n", hard_info.version);
     printf("Network interfaces: ");
 	
-	for(int i=0; i < hard_info.count; i++)	
+	for(int i = 0; i < hard_info.net_int_count; i++)	
 		printf("%s ", hard_info.net_int[i]);
 	
 	printf("\nCPU: %s\n", hard_info.cpu);
 	printf("CPU CORES: %i\n", hard_info.cpu_cores);
 	printf("GPU: \n");
-	printf("Resolution: %s", hard_info.resolution);
+	printf("Resolution: %s\n", hard_info.resolution);
 	printf("RAM: %i Mb\n", mem.memTotal);
-	printf("Swap: %i Mb\n\n", mem.swapTotal);
+	printf("Swap: %i Mb\n", mem.swapTotal);
+
+	// Вывод дисков
+	printf("hdd/ssd:\n");
+	for(int i = 0; i < volumes_info.volumes_count; i++)	{
+		printf("\t* %s ", volumes_info.volumes[i]);
+		if(volumes_info.vol_size[i] < 1024)
+			printf("%.0f Mb", volumes_info.vol_size[i]);
+		else
+			printf("%.1f Gb", volumes_info.vol_size[i] / 1024);
+
+		// Вывод разделов диска
+		for(int j = 0; j < volumes_info.partitions_count; j++) {
+			printf("\n\t\t- %s ", volumes_info.partitions[j]);
+			if(volumes_info.part_size[j] < 1024)
+				printf("%.0f Mb", volumes_info.part_size[j]);
+			else
+				printf("%.1f Gb", volumes_info.part_size[j] / 1024);
+		}
+	}
+	printf("\n");
 }
 
 void write_to_log() {
@@ -63,7 +84,7 @@ void write_to_log() {
 		fprintf(fp, "Version: %s\n", hard_info.version);
 		fprintf(fp, "Network interfaces: ");
 		
-		for(int i = 0; i < hard_info.count; i++)	
+		for(int i = 0; i < hard_info.net_int_count; i++)	
 			fprintf(fp, "%s ", hard_info.net_int[i]);
 
 		fprintf(fp, "\nCPU:\t%s\n", hard_info.cpu);
@@ -159,80 +180,4 @@ void full_output() {
 	hardware_info_output();						// Вывод хар-к ПК
 	printf("-------------------------------\n\n");
 	system_info_output();	// Вывод текущих значений
-}
-
-void ncurses_sys_output(int line_pos) {
-	mvprintw(line_pos,     1, "CPU avg: %s\n", sys_info.cpuavg);
-	mvprintw(line_pos + 1, 1, "GPU: %i Mb\n", sys_info.gpuavg);
-	mvprintw(line_pos + 2, 1, "RAM: %i / %i Mb\n", mem.memAvail, mem.memTotal);
-	mvprintw(line_pos + 3, 1, "Swap: %i / %i Mb\n", mem.swapAvail, mem.swapTotal);
-	mvprintw(line_pos + 4, 1, "CPU temp: %i C\n\n", sys_info.cpu_temp_avg);
-}
-
-void ncurses_hw_output(int line_pos) {
-	mvprintw(line_pos, 1, "Version: %s\n", hard_info.version);
-		
-    mvprintw(line_pos + 1, 1, "Network interfaces:");
-	// move(line_pos + 1, 20);
-	// for(int i = 0; i < hard_info.count; i++) {
-	// 	addch(' ');
-	// 	for(int j = 0; j < strlen(hard_info.net_int[i]); j++) 
-	// 		addch(hard_info.net_int[i][j]);
-	// }
-	
-	mvprintw(line_pos + 2, 1, "CPU: %s\n", hard_info.cpu);
-	mvprintw(line_pos + 3, 1, "CPU CORES: %i\n", hard_info.cpu_cores);
-	mvprintw(line_pos + 4, 1, "GPU: \n");
-	mvprintw(line_pos + 5, 1, "Resolution: %s", hard_info.resolution);
-	mvprintw(line_pos + 6, 1, "RAM: %i Mb\n", mem.memTotal);
-	mvprintw(line_pos + 7, 1, "Swap: %i Mb\n\n", mem.swapTotal);
-}
-
-void *ncurses_output() {
-	get_hard_info();			// сбор хар-к ПК
-	
-	while(1) {
-		get_sys_info();				// сбор текущих значений
-
-		ncurses_hw_output(1);
-		ncurses_sys_output(10);
-		mvprintw(LINES - 1, 1, " ESC - Quit");
-		refresh();
-		sleep(1);
-	}
-	return (NULL);
-}
-
-void *ncurses_input(void *threadArgs) {
-	pthread_t* output_tid = (pthread_t*) threadArgs;
-	int value;
-
-	// Если нажата клавиша ESCAPE - закрываем поток вывода ncurses_output
-	while(value != KEY_F(1)) value = wgetch(stdscr);
-	pthread_cancel(*output_tid);
-	
-	return (NULL);
-}
-
-void ncurses_background() {
-	initscr();
-    curs_set(0);
-	noecho();
-	keypad(stdscr, TRUE);
-	
-	pthread_mutex_init(&ncurses_mutex, NULL);
-	pthread_t* threadID = (pthread_t*) malloc(2 * sizeof(pthread_t));
-					
-	if(pthread_create(&threadID[0], NULL, ncurses_output, NULL) != 0)
-		DieWithError("pthread_create() failed");
-	if(pthread_create(&threadID[1], NULL, ncurses_input, &threadID[0]) != 0)
-		DieWithError("pthread_create() failed");
-            
-	if(pthread_join(threadID[0], NULL) != 0) 
-		DieWithError("Joining the first ncurses_thread");
-	if(pthread_join(threadID[1], NULL) != 0) 
-		DieWithError("Joining the second ncurses_thread");
-
-	pthread_mutex_destroy(&ncurses_mutex);
-	endwin();
 }

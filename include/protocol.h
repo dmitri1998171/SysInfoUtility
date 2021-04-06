@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <string.h>
+#include <dirent.h> 
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <pthread.h>
@@ -19,26 +20,35 @@ struct ThreadArgs{
 };
 
 struct mem {
-	int memTotal;	// Полный объем
-	int memAvail;	// Используется
-	int swapTotal;	// swap полный
-	int swapAvail;	// swap исп.
+	int memTotal;					  // Полный объем
+	int memAvail;					  // Используется
+	int swapTotal;					  // swap полный
+	int swapAvail;					  // swap исп.
 }mem;
 
+struct volumes_info {
+	char volumes[4][5];			  	  // Физ. диски hdd/ssd
+	char partitions[4][5];			  // разделы диска
+	int volumes_count;				  // Кол-во дисков hdd/ssd
+	int partitions_count;			  // Кол-во разделов
+	float vol_size[4];				  // Обьем hdd/ssd в Mb
+	float part_size[4];				  // Обьем разделов в Mb
+}volumes_info;
+
 struct sys_info {
-	float cpu_load;	  	  // Нагрузка процессора
-	char cpuavg[15];	  // Нагрузка процессора
-	int gpuavg;			  // Объем видеопамяти
-	int cpu_temp_avg;	  // cpu temp
+	char cpuavg[15];	   			  // Нагрузка процессора
+	int gpuavg;			   			  // Объем видеопамяти
+	int cpu_temp_avg;	   			  // cpu temp
+	float cpu_load;	  	   			  // Нагрузка процессора
 }sys_info;
 
 struct hard_info {
+	char resolution[10];			  // Разрешение экрана
     char version[ARR_SIZE];      	  // Версия ядра линукс
-	char net_int[2][7]; 			  // Сетевые интерфейсы
 	char cpu[ARR_SIZE];			 	  // Процессор
-	int cpu_cores;		 	 		  // Кол-во ядер
-	unsigned int count;	  			  // Кол-во сетев. инетерфейсов
-	char resolution[ARR_SIZE/4];	  // Разрешение экрана
+	char net_int[2][7]; 			  // Сетевые интерфейсы
+	unsigned int cpu_cores;		 	  // Кол-во ядер
+	unsigned int net_int_count;	  	  // Кол-во сетев. инетерфейсов
 }hard_info;
 
 struct graph_strings {
@@ -46,7 +56,7 @@ struct graph_strings {
 	float string_load[6];			  // Загруженность 
 }graph_strings;
 
-char* parsing(char *str, char *symbol);
+char* parsing(char *str, char *symbol, int count);
 void get_number_from_str(char* str, int* value);
 
 // ##### SYSTEM INFO #######################
