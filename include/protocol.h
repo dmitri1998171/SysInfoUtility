@@ -20,10 +20,10 @@ struct ThreadArgs{
 };
 
 struct mem {
-	int memTotal;					  // Полный объем
-	int memAvail;					  // Используется
-	int swapTotal;					  // swap полный
-	int swapAvail;					  // swap исп.
+	int mem_total;					  // Полный объем
+	int mem_used;					  // Используется
+	int swap_total;					  // swap полный
+	int swap_used;					  // swap исп.
 }mem;
 
 struct volumes_info {
@@ -36,10 +36,12 @@ struct volumes_info {
 }volumes_info;
 
 struct sys_info {
-	char cpuavg[15];	   			  // Нагрузка процессора
-	int gpuavg;			   			  // Объем видеопамяти
-	int cpu_temp_avg;	   			  // cpu temp
-	float cpu_load;	  	   			  // Нагрузка процессора
+	int gpu_total;			   		  // Общий объем видеопамяти
+	int gpu_used;			   		  // Используемый объем 
+	int cpu_temp_avg;	   			  // Cpu temp средняя
+	int gpu_temp_avg;				  // Gpu temp средняя
+	char cpu[15];					  // Нагрузка процессора (для строк)
+	float cpu_load_avg;	  	   		  // Нагрузка процессора средняя (для формул)
 }sys_info;
 
 struct hard_info {

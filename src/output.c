@@ -11,9 +11,9 @@ void graph_strings_Func() {
 	// graph_strings.string_load[0] = 
 	// graph_strings.string_load[0] = 
 	// graph_strings.string_load[0] = 
-	graph_strings.string_load[3] = (sys_info.cpu_load / hard_info.cpu_cores) * 100;
 	// graph_strings.string_load[0] = 
-	graph_strings.string_load[5] = sys_info.gpuavg / 10;
+	graph_strings.string_load[3] = (sys_info.cpu_load_avg / hard_info.cpu_cores) * 100;
+	graph_strings.string_load[5] = sys_info.gpu_total / 10;
 }
 
 char* parsing(char *str, char *symbol, int count) {
@@ -37,10 +37,10 @@ void DieWithError(char *errorMessage) {
 }
 
 void system_info_output() {
-	printf("CPU avg: %s\n", sys_info.cpuavg);
-	printf("GPU: %i Mb\n", sys_info.gpuavg);
-	printf("RAM: %i / %i Mb\n", mem.memAvail, mem.memTotal);
-	printf("Swap: %i / %i Mb\n", mem.swapAvail, mem.swapTotal);
+	printf("CPU avg: %s\n", sys_info. cpu);
+	printf("GPU: %i Mb\n", sys_info.gpu_total);
+	printf("RAM: %i / %i Mb\n", mem.mem_used, mem.mem_total);
+	printf("Swap: %i / %i Mb\n", mem.swap_used, mem.swap_total);
 	printf("CPU temp: %i C\n\n", sys_info.cpu_temp_avg);
 }
 
@@ -55,8 +55,8 @@ void hardware_info_output() {
 	printf("CPU CORES: %i\n", hard_info.cpu_cores);
 	printf("GPU: \n");
 	printf("Resolution: %s\n", hard_info.resolution);
-	printf("RAM: %i Mb\n", mem.memTotal);
-	printf("Swap: %i Mb\n", mem.swapTotal);
+	printf("RAM: %i Mb\n", mem.mem_total);
+	printf("Swap: %i Mb\n", mem.swap_total);
 
 	// Вывод дисков
 	printf("hdd/ssd:\n");
@@ -90,13 +90,13 @@ void write_to_log() {
 		fprintf(fp, "\nCPU:\t%s\n", hard_info.cpu);
 		fprintf(fp, "CPU CORES:\t%i\n", hard_info.cpu_cores);
 		fprintf(fp, "GPU: \n");
-		fprintf(fp, "RAM: %i Mb\n", mem.memTotal);
-		fprintf(fp, "Swap: %i Mb\n\n", mem.swapTotal);
+		fprintf(fp, "RAM: %i Mb\n", mem.mem_total);
+		fprintf(fp, "Swap: %i Mb\n\n", mem.swap_total);
 
-		fprintf(fp, "CPU avg: %s\n", sys_info.cpuavg);
+		fprintf(fp, "CPU avg: %.2f\n", sys_info.cpu_load_avg);
 		fprintf(fp, "GPU:\n");
-		fprintf(fp, "RAM: %i / %i Mb\n", mem.memAvail, mem.memTotal);
-		fprintf(fp, "Swap: %i / %i Mb\n", mem.swapAvail, mem.swapTotal);
+		fprintf(fp, "RAM: %i / %i Mb\n", mem.mem_used, mem.mem_total);
+		fprintf(fp, "Swap: %i / %i Mb\n", mem.swap_used, mem.swap_total);
 		fprintf(fp, "CPU temp: %i C\n\n", sys_info.cpu_temp_avg);
 		fclose(fp);
 	}
@@ -126,7 +126,7 @@ void generate_html() {
 	fprintf(fdst, "\t\t\t<div class=\"block\">\n");
 	fprintf(fdst, "\t\t\t\t<div class=\"subblock\" style=\"padding-bottom: 14px;\">\n");
 	
-	// Левая колнка - текст. инфа
+	// Левая колонка - текст. инфа
     while(fgets(str, ARR_SIZE, fsrc)) {
 		if(strstr(str, "CPU avg:")) { // Отделение текущ. инфы в отдельный блок
 			fprintf(fdst, "\t\t\t\t</div>\n");

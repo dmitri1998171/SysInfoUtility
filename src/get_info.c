@@ -7,28 +7,31 @@ void cpu_sys_info() {
 
 	if ((fp = fopen("/proc/loadavg", "r")) != NULL) {
 		fgets(str, 15, fp);
-		strcpy(sys_info.cpuavg, str);
+		strcpy(sys_info.cpu, str);
 		char *ptr = strtok(str, " ");
-		sys_info.cpu_load = atof(ptr);
+		sys_info.cpu_load_avg = atof(ptr);
 		fclose(fp);
 	}
 }
 
 void mem_info() {
 	char str[ARR_SIZE];
+	int value = 0;
 
     if ((fp = fopen("/proc/meminfo", "r")) != NULL) {
 		while (fgets(str, ARR_SIZE, fp)) {
 			if(strstr(str, "MemTotal"))
-				get_number_from_str(parsing(str, " ", 1), &mem.memTotal);
-			if(strstr(str, "MemAvailable"))
-				get_number_from_str(parsing(str, " ", 1), &mem.memAvail);
+				get_number_from_str(parsing(str, " ", 1), &mem.mem_total);
+			if(strstr(str, "MemAvailable")) {
+				get_number_from_str(parsing(str, " ", 1), &value);
+				mem.mem_used = mem.mem_total - value;
+			}
 			if(strstr(str, "SwapTotal"))
-				get_number_from_str(parsing(str, " ", 1), &mem.swapTotal);
+				get_number_from_str(parsing(str, " ", 1), &mem.swap_total);
 			if(strstr(str, "SwapFree")) {
 				int tmp = 0;
 				get_number_from_str(parsing(str, " ", 1), &tmp);
-				mem.swapAvail = mem.swapTotal - tmp;
+				mem.swap_used = mem.swap_total - tmp;
 			}
 		}
 		fclose(fp);
@@ -39,12 +42,11 @@ void gpu_sys_info() {
 	char *value;
 	char str[ARR_SIZE];
 
-	if ((fp = fopen("/var/log/syslog.1", "r")) != NULL) {
+	if ((fp = fopen("/var/log/dmesg", "r")) != NULL) {
 		while (fgets(str, ARR_SIZE, fp)) {
-			if(value = strstr(str, "graphics memory")) {
-				value = strstr(value, " ");
-				value = strtok(value, " ");
-				sys_info.gpuavg = atoi(value) / 1000 / 13.9;
+			if(value = strstr(str, "graphics memory: ")) {
+				value = parsing(value, " ", 2);
+				sys_info.gpu_total = atoi(value) / 1000 / 13.9;
 			}
 		}
     	fclose(fp);
@@ -56,9 +58,6 @@ void cpu_temp_info() {
 
 	if((fp = fopen("/sys/devices/platform/coretemp.0/hwmon/hwmon5/temp1_input", "r")) != NULL) {
 		fgets(str, 15, fp);
-
-	//	strcpy(sys_info.cpuavg, str);
-	//	char *ptr = strtok(str, " ");
 		sys_info.cpu_temp_avg = atoi(str) / 1000;
 		fclose(fp);
 	}
@@ -86,7 +85,6 @@ void version_info() {
 
 void network_interaces() {
 	struct dirent *dir;
-    
 	DIR *d = opendir("/sys/class/net");
 	if(d != NULL) { 
 		while((dir = readdir(d))){
