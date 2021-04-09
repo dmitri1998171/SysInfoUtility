@@ -21,7 +21,7 @@ void ncurses_hw_output(WINDOW *win, int line_pos) {
 	
 	mvwprintw(win, line_pos + 2, 1, "CPU: %s", hard_info.cpu);
 	mvwprintw(win, line_pos + 3, 1, "CPU CORES: %i", hard_info.cpu_cores);
-	mvwprintw(win, line_pos + 4, 1, "GPU: ");
+	mvwprintw(win, line_pos + 4, 1, "GPU: %s", hard_info.gpu);
 	mvwprintw(win, line_pos + 5, 1, "Resolution: %s", hard_info.resolution);
 	mvwprintw(win, line_pos + 6, 1, "RAM: %i Mb", mem.mem_total);
 	mvwprintw(win, line_pos + 7, 1, "Swap: %i Mb", mem.swap_total);

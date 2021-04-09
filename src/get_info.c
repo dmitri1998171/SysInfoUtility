@@ -116,6 +116,16 @@ void cpu_hard_info() {
 	}
 }
 
+void gpu_hard_info() {
+	char str[ARR_SIZE];
+
+	if ((fp = fopen("/sys/class/graphics/fb0/name", "r")) != NULL) {
+		fgets(str, ARR_SIZE, fp);
+		strncpy(hard_info.gpu, str, strlen(str)-1);
+		fclose(fp);
+	}
+}
+
 void resolution() {
 	char str[12];
 
@@ -155,8 +165,8 @@ void get_hard_info() {
     version_info();
     network_interaces();
 	cpu_hard_info();
+	gpu_hard_info();
 	resolution();
 	mem_info();
 	hdd_ssd_info();
 }
-

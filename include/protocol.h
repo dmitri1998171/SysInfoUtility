@@ -45,12 +45,13 @@ struct sys_info {
 }sys_info;
 
 struct hard_info {
-	char resolution[10];			  // Разрешение экрана
-    char version[ARR_SIZE];      	  // Версия ядра линукс
-	char cpu[ARR_SIZE];			 	  // Процессор
-	char net_int[2][7]; 			  // Сетевые интерфейсы
 	unsigned int cpu_cores;		 	  // Кол-во ядер
 	unsigned int net_int_count;	  	  // Кол-во сетев. инетерфейсов
+	char resolution[10];			  // Разрешение экрана
+	char net_int[2][7]; 			  // Сетевые интерфейсы
+    char version[ARR_SIZE];      	  // Версия ядра линукс
+	char cpu[ARR_SIZE];			 	  // Процессор
+	char gpu[ARR_SIZE];			 	  // Видеокарта
 }hard_info;
 
 struct graph_strings {
