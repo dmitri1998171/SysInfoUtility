@@ -4,6 +4,8 @@
 #include <getopt.h>
 #include <string.h>
 #include <dirent.h> 
+#include <mntent.h>
+#include <sys/statvfs.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <pthread.h>
@@ -27,12 +29,14 @@ struct mem {
 }mem;
 
 struct volumes_info {
-	char volumes[4][5];			  	  // Физ. диски hdd/ssd
-	char partitions[4][5];			  // разделы диска
 	int volumes_count;				  // Кол-во дисков hdd/ssd
 	int partitions_count;			  // Кол-во разделов
-	float vol_size[4];				  // Обьем hdd/ssd в Mb
-	float part_size[4];				  // Обьем разделов в Mb
+	float vol_size[4];				  // Обьем hdd/ssd в MB
+	float vol_free[4];				  // Объем свободного места на диске в MB
+	float part_free[4];				  // ... в разделе
+	float part_size[4];				  // Обьем разделов в MB
+	char volumes[4][5];			  	  // Физ. диски hdd/ssd
+	char partitions[4][5];			  // разделы диска
 }volumes_info;
 
 struct sys_info {

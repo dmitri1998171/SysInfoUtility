@@ -60,22 +60,22 @@ void hardware_info_output() {
 
 	// Вывод дисков
 	printf("hdd/ssd:\n");
-	for(int i = 0; i < volumes_info.volumes_count; i++)	{
-		printf("\t* %s ", volumes_info.volumes[i]);
-		if(volumes_info.vol_size[i] < 1024)
-			printf("%.0f Mb", volumes_info.vol_size[i]);
-		else
-			printf("%.1f Gb", volumes_info.vol_size[i] / 1024);
+	// for(int i = 0; i < volumes_info.volumes_count; i++)	{
+	// 	printf("    * %s ", volumes_info.volumes[i]);
+	// 	if(volumes_info.vol_size[i] < 1024)
+	// 		printf("%.0f / %.0f Mb", volumes_info.vol_free[i], volumes_info.vol_size[i]);
+	// 	else
+	// 		printf("%.1f / %.1f Gb", volumes_info.vol_free[i] / 1024, volumes_info.vol_size[i] / 1024);
 
 		// Вывод разделов диска
 		for(int j = 0; j < volumes_info.partitions_count; j++) {
-			printf("\n\t\t- %s ", volumes_info.partitions[j]);
+			printf("      - %s ", volumes_info.partitions[j]);
 			if(volumes_info.part_size[j] < 1024)
-				printf("%.0f Mb", volumes_info.part_size[j]);
+				printf("%.0f / %.0f Mb\n", volumes_info.part_free[j], volumes_info.part_size[j]);
 			else
-				printf("%.1f Gb", volumes_info.part_size[j] / 1024);
+				printf("%.1f / %.1f Gb\n", volumes_info.part_free[j] / 1024, volumes_info.part_size[j] / 1024);
 		}
-	}
+	
 	printf("\n");
 }
 

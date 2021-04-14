@@ -46,23 +46,33 @@ void ncurses_hw_output(WINDOW *win, int line_pos) {
 	}
 }
 
+/* Отрисовка полосы загрузки блока */
 void ncurses_graph_load(WINDOW *block, float current_value, float max_value, int max_length) {
-		float x = (current_value * 100) / max_value;
-		float line_length = (x * max_length) / 100;
+	float x = (current_value * 100) / max_value;
+	float line_length = (x * max_length) / 100;
 
-		for(int j = 1; j < line_length; j++)
-			mvwprintw(block, 1, j, "|");
-		wrefresh(block);
+	for(int j = 1; j < line_length; j++)
+		mvwprintw(block, 1, j, "|");
+	wrefresh(block);
+}
+
+void draw_graph_blocks(WINDOW **subwindows, WINDOW **blocks, char *title, int count, int line_length, int pos) {
+	for(int i = 0; i < count; i++) {
+		blocks[i] = derwin(subwindows[1], 3, (COLS / 2) - 2, ((i * 3) + 1) * pos, 1);
+		box(blocks[i], 0, 0);
+		mvwprintw(blocks[i], 0, 2, "%s", title + i  * line_length);
+	}
 }
 
 void *ncurses_output() {
 	WINDOW *subwindows[2];
 	WINDOW *text_blocks[2];
-	WINDOW *graph_blocks[6];
+	WINDOW *graph_blocks[5];
+	WINDOW *hdd_ssd_blocks[4];
 	char text_title[2][14] = {"Hardware info", "System info"};
-	char blocks_title[6][13] = {"CPU avg", "GPU load", "Memory load", "CPU t*C", "GPU t*C", "HDD/SSD load"};
+	char blocks_title[5][13] = {"CPU avg", "GPU load", "Memory load", "CPU t*C", "GPU t*C"};
 	
-	get_hard_info();			// сбор хар-к ПК
+	get_hard_info();
 	
 	// массив, содержащий кол-во строк и положение по 'y' для всех текстов. блоков. 
 	// Положение по 'y' зависит от кол-ва строк в предыдущем блоке
@@ -76,26 +86,29 @@ void *ncurses_output() {
 		box(text_blocks[i], 0, 0);
 		mvwprintw(text_blocks[i], 0, 2, "%s", text_title[i]);	// Заголовок блока
 	}
+	
 	// Ползунки 
-	for(int i = 0; i < 6; i++) {
-		graph_blocks[i] = derwin(subwindows[1], 3, (COLS / 2) - 2, (i * 3) + 1, 1);
-		box(graph_blocks[i], 0, 0);
-		mvwprintw(graph_blocks[i], 0, 2, "%s", blocks_title[i]);
-	}
+	draw_graph_blocks(subwindows, graph_blocks, (char*) blocks_title, 5, 13, 1);
+	mvwprintw(subwindows[1], 17, 1, "HDD/SSD load");
+	whline(subwindows[1], ACS_HLINE, (COLS / 2) - 14);
+	draw_graph_blocks(subwindows, hdd_ssd_blocks, (char*) volumes_info.partitions, volumes_info.partitions_count, 5, 3 * 6);
 
 	ncurses_hw_output(text_blocks[0], 1);
 	wrefresh(subwindows[0]);
 	wrefresh(subwindows[1]);
 	
 	while(1) {
-		get_sys_info();			// сбор текущих значений
+		get_sys_info();
 		ncurses_sys_output(text_blocks[1], 1);
 		ncurses_graph_load(graph_blocks[0], sys_info.cpu_load_avg, 10, (COLS / 2) - 3);
 		ncurses_graph_load(graph_blocks[1], sys_info.gpu_used, sys_info.gpu_total, (COLS / 2) - 3);
-		ncurses_graph_load(graph_blocks[2], mem.mem_used, mem.mem_total, (COLS / 2) - 3);
+		ncurses_graph_load(graph_blocks[2], mem.mem_used, mem.mem_total, (COLS / 2) - 3);				// 
 		ncurses_graph_load(graph_blocks[3], sys_info.cpu_temp_avg, 100, (COLS / 2) - 3);
 		ncurses_graph_load(graph_blocks[4], sys_info.gpu_temp_avg, 100, (COLS / 2) - 3);
-		// ncurses_graph_load(graph_blocks[5], mem.mem_used, mem.mem_total, (COLS / 2) - 3);
+		
+		for(int i = 0; i < volumes_info.partitions_count; i++) 
+			ncurses_graph_load(hdd_ssd_blocks[i], volumes_info.part_free[i], volumes_info.part_size[i], (COLS / 2) - 3);
+
 		mvprintw(LINES - 1, 1, "F1 - Quit");
 		wrefresh(text_blocks[1]);
 		refresh();

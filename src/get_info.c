@@ -63,6 +63,7 @@ void cpu_temp_info() {
 	}
 }
 
+/* сбор текущих значений */
 void get_sys_info() {
     cpu_sys_info();
 	mem_info();
@@ -137,30 +138,33 @@ void resolution() {
 }
 
 void hdd_ssd_info() {
-    if ((fp = fopen("/proc/partitions", "r")) != NULL) {
-		char *p;
-		char str[ARR_SIZE];
-		volumes_info.partitions_count = 0;
-		volumes_info.volumes_count = 0;
-		
-		while (fgets(str, ARR_SIZE, fp)) {
-			if(p = strstr(str, "sd")) {
-				if(strlen(p) == 4) {
-					strncpy(volumes_info.volumes[volumes_info.volumes_count], p, strlen(p) - 1);
-					volumes_info.vol_size[volumes_info.volumes_count] = atof(parsing(str, " ", 2)) / 1024;
-					volumes_info.volumes_count++;
-				}
-				else {
-					strncpy(volumes_info.partitions[volumes_info.partitions_count], p, strlen(p) - 1);
-					volumes_info.part_size[volumes_info.partitions_count] = atof(parsing(str, " ", 2)) / 1024;
-					volumes_info.partitions_count++;
-				}
+	char *ptr, *ptr1;
+	FILE* fp, *fp1;
+	char str[ARR_SIZE];
+	struct mntent *fs;
+	struct statvfs diskFree;
+	volumes_info.partitions_count = 0;
+	volumes_info.volumes_count = 0;
+
+	if ((fp1 = setmntent("/etc/mtab", "r"))) {
+		while ((fs = getmntent(fp1)))
+
+		if (fs->mnt_fsname[0] == '/') { 
+			statvfs(fs->mnt_dir, &diskFree);
+			if(ptr1 = strstr(fs->mnt_fsname, "sd")) {
+				strncpy(volumes_info.volumes[volumes_info.volumes_count], ptr1, strlen(ptr1) - 1);
+				strncpy(volumes_info.partitions[volumes_info.partitions_count], ptr1, strlen(ptr1));
+				volumes_info.part_size[volumes_info.partitions_count] = diskFree.f_blocks * diskFree.f_bsize / 1000 / 1000;
+				volumes_info.part_free[volumes_info.partitions_count] = volumes_info.part_size[volumes_info.partitions_count] - diskFree.f_bavail * diskFree.f_bsize / 1024 / 1024;
+				volumes_info.partitions_count++;
 			}
 		}
-		fclose(fp);
+		endmntent(fp1);
+		volumes_info.volumes_count++;
 	}
 }
 
+/* сбор характеристик ПК */
 void get_hard_info() {
     version_info();
     network_interaces();
