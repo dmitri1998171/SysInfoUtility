@@ -11,7 +11,7 @@
 #include <pthread.h>
 #include <ncurses.h>
 
-#define ARR_SIZE 50
+#define ARR_SIZE 55
 
 FILE *fp;
 pthread_mutex_t mutex, ncurses_mutex;
@@ -24,39 +24,40 @@ struct ThreadArgs{
 struct mem {
 	int mem_total;					  // Полный объем
 	int mem_used;					  // Используется
-	int swap_total;					  // swap полный
+	int swap_total;				  // swap полный
 	int swap_used;					  // swap исп.
 }mem;
 
 struct volumes_info {
 	int volumes_count;				  // Кол-во дисков hdd/ssd
-	int partitions_count;			  // Кол-во разделов
+	int partitions_count;			  	  // Кол-во разделов
 	float vol_size[4];				  // Обьем hdd/ssd в MB
 	float vol_free[4];				  // Объем свободного места на диске в MB
 	float part_free[4];				  // ... в разделе
 	float part_size[4];				  // Обьем разделов в MB
 	char volumes[4][5];			  	  // Физ. диски hdd/ssd
-	char partitions[4][5];			  // разделы диска
+	char partitions[4][5];			  	  // разделы диска
 }volumes_info;
 
 struct sys_info {
 	int gpu_total;			   		  // Общий объем видеопамяти
 	int gpu_used;			   		  // Используемый объем 
-	int cpu_temp_avg;	   			  // Cpu temp средняя
+	int cpu_temp_avg;	   			  // Cpu temp 
 	int cpu_temp_max;				  // ... max
-	int gpu_temp_avg;				  // Gpu temp средняя
+	int gpu_temp_avg;				  // Gpu temp 
+	int gpu_temp_max;				  // ... max
 	char cpu[15];					  // Нагрузка процессора (для строк)
 	float cpu_load_avg;	  	   		  // Нагрузка процессора средняя (для формул)
 }sys_info;
 
 struct hard_info {
 	unsigned int cpu_cores;		 	  // Кол-во ядер
-	unsigned int net_int_count;	  	  // Кол-во сетев. инетерфейсов
-	char resolution[10];			  // Разрешение экрана
-	char net_int[2][7]; 			  // Сетевые интерфейсы
-    char version[ARR_SIZE];      	  // Версия ядра линукс
+	unsigned int net_int_count;	  		  // Кол-во сетев. инетерфейсов
+	char resolution[10];				  // Разрешение экрана
+    	char version[ARR_SIZE];      	  		  // Версия ядра линукс
 	char cpu[ARR_SIZE];			 	  // Процессор
 	char gpu[ARR_SIZE];			 	  // Видеокарта
+	char net_int[2][7]; 			  	  // Сетевые интерфейсы
 }hard_info;
 
 struct graph_strings {

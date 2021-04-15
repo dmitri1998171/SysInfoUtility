@@ -102,11 +102,11 @@ void *ncurses_output() {
 		get_sys_info();
 		ncurses_sys_output(text_blocks[1], 1);
 		
-		ncurses_graph_load(graph_blocks[0], sys_info.cpu_load_avg, 10, (COLS / 2) - 3);
-		ncurses_graph_load(graph_blocks[1], sys_info.gpu_used, sys_info.gpu_total, (COLS / 2) - 3);
+		ncurses_graph_load(graph_blocks[0], sys_info.cpu_load_avg, hard_info.cpu_cores, (COLS / 2) - 3);		//
+		ncurses_graph_load(graph_blocks[1], sys_info.gpu_used, sys_info.gpu_total, (COLS / 2) - 3);		//
 		ncurses_graph_load(graph_blocks[2], mem.mem_used, mem.mem_total, (COLS / 2) - 3);				// 
-		ncurses_graph_load(graph_blocks[3], sys_info.cpu_temp_avg, 100, (COLS / 2) - 3);
-		ncurses_graph_load(graph_blocks[4], sys_info.gpu_temp_avg, 100, (COLS / 2) - 3);
+		ncurses_graph_load(graph_blocks[3], sys_info.cpu_temp_avg, sys_info.cpu_temp_max, (COLS / 2) - 3);		//
+		ncurses_graph_load(graph_blocks[4], sys_info.gpu_temp_avg, sys_info.gpu_temp_max, (COLS / 2) - 3);		//
 		
 		for(int i = 0; i < volumes_info.partitions_count; i++) 
 			ncurses_graph_load(hdd_ssd_blocks[i], volumes_info.part_free[i], volumes_info.part_size[i], (COLS / 2) - 3);

@@ -93,8 +93,7 @@ void version_info() {
 
     if ((fp = fopen("/proc/version", "r")) != NULL) {
 		fgets(str, ARR_SIZE, fp);
-		char *ptr = strtok(str, "Linux version ");
-		strcpy(hard_info.version, ptr);
+		strcpy(hard_info.version, strtok(str, "Linux version "));
 		fclose(fp);
 	}
 }
@@ -103,7 +102,7 @@ void network_interaces() {
 	struct dirent *dir;
 	DIR *d = opendir("/sys/class/net");
 	if(d != NULL) { 
-		while((dir = readdir(d))){
+		while(dir = readdir(d)){
 			if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
 
 			strcpy(hard_info.net_int[hard_info.net_int_count], dir->d_name);
@@ -134,6 +133,7 @@ void cpu_hard_info() {
 
 void gpu_hard_info() {
 	char str[ARR_SIZE];
+	// /proc/driver/nvidia/gpus/0/information (grep model)
 
 	if ((fp = fopen("/sys/class/graphics/fb0/name", "r")) != NULL) {
 		fgets(str, ARR_SIZE, fp);
@@ -170,7 +170,7 @@ void hdd_ssd_info() {
 				strncpy(volumes_info.volumes[volumes_info.volumes_count], ptr1, strlen(ptr1) - 1);
 				strncpy(volumes_info.partitions[volumes_info.partitions_count], ptr1, strlen(ptr1));
 				volumes_info.part_size[volumes_info.partitions_count] = diskFree.f_blocks * diskFree.f_bsize / 1000 / 1000;
-				volumes_info.part_free[volumes_info.partitions_count] = volumes_info.part_size[volumes_info.partitions_count] - diskFree.f_bavail * diskFree.f_bsize / 1024 / 1024;
+				volumes_info.part_free[volumes_info.partitions_count] = (diskFree.f_blocks - diskFree.f_bfree) * diskFree.f_bsize / 1024 / 1024;
 				volumes_info.partitions_count++;
 			}
 		}
