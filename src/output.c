@@ -41,7 +41,7 @@ void system_info_output() {
 	printf("GPU: %i Mb\n", sys_info.gpu_total);
 	printf("RAM: %i / %i Mb\n", mem.mem_used, mem.mem_total);
 	printf("Swap: %i / %i Mb\n", mem.swap_used, mem.swap_total);
-	printf("CPU temp: %i C\n\n", sys_info.cpu_temp_avg);
+	printf("CPU temp: %i / %i C\n\n", sys_info.cpu_temp_avg, sys_info.cpu_temp_max);
 }
 
 void hardware_info_output() {

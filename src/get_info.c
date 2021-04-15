@@ -54,12 +54,27 @@ void gpu_sys_info() {
 }
 
 void cpu_temp_info() {
+	int i = 0;
 	char str[15];
-
-	if((fp = fopen("/sys/devices/platform/coretemp.0/hwmon/hwmon5/temp1_input", "r")) != NULL) {
-		fgets(str, 15, fp);
-		sys_info.cpu_temp_avg = atoi(str) / 1000;
-		fclose(fp);
+	char filename[255];
+	
+	while(1) {
+		sprintf(filename,"/sys/devices/platform/coretemp.0/hwmon/hwmon%i/temp1_input",i);
+		if((fp = fopen(filename, "r")) != NULL) {
+			fgets(str, 15, fp);
+			sys_info.cpu_temp_avg = atoi(str) / 1000;
+			fclose(fp);
+		}
+		
+		sprintf(filename,"/sys/devices/platform/coretemp.0/hwmon/hwmon%i/temp1_max",i);
+		if((fp = fopen(filename, "r")) != NULL) {
+			fgets(str, 15, fp);
+			sys_info.cpu_temp_max = atoi(str) / 1000;
+			fclose(fp);
+			break;
+		}
+		i++;
+	
 	}
 }
 

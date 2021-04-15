@@ -5,7 +5,7 @@ void ncurses_sys_output(WINDOW *win, int line_pos) {
 	mvwprintw(win, line_pos + 1, 1, "GPU: %i Mb", sys_info.gpu_total);
 	mvwprintw(win, line_pos + 2, 1, "RAM: %i / %i Mb", mem.mem_used, mem.mem_total);
 	mvwprintw(win, line_pos + 3, 1, "Swap: %i / %i Mb", mem.swap_used, mem.swap_total);
-	mvwprintw(win, line_pos + 4, 1, "CPU temp: %i C", sys_info.cpu_temp_avg);
+	mvwprintw(win, line_pos + 4, 1, "CPU temp: %i / %i C", sys_info.cpu_temp_avg, sys_info.cpu_temp_max);
 }
 
 void ncurses_hw_output(WINDOW *win, int line_pos) {

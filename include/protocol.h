@@ -43,6 +43,7 @@ struct sys_info {
 	int gpu_total;			   		  // Общий объем видеопамяти
 	int gpu_used;			   		  // Используемый объем 
 	int cpu_temp_avg;	   			  // Cpu temp средняя
+	int cpu_temp_max;				  // ... max
 	int gpu_temp_avg;				  // Gpu temp средняя
 	char cpu[15];					  // Нагрузка процессора (для строк)
 	float cpu_load_avg;	  	   		  // Нагрузка процессора средняя (для формул)
