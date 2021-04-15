@@ -46,7 +46,6 @@ void ncurses_hw_output(WINDOW *win, int line_pos) {
 	}
 }
 
-/* Отрисовка полосы загрузки блока */
 void ncurses_graph_load(WINDOW *block, float current_value, float max_value, int max_length) {
 	float x = (current_value * 100) / max_value;
 	float line_length = (x * max_length) / 100;
@@ -56,11 +55,13 @@ void ncurses_graph_load(WINDOW *block, float current_value, float max_value, int
 	wrefresh(block);
 }
 
-void draw_graph_blocks(WINDOW **subwindows, WINDOW **blocks, char *title, int count, int line_length, int pos) {
+void draw_graph_blocks(WINDOW *subwindow, WINDOW **blocks, char *title, int count, int line_length, int pos) {
+	int max_length = (COLS / 2) - 2;
+	
 	for(int i = 0; i < count; i++) {
-		blocks[i] = derwin(subwindows[1], 3, (COLS / 2) - 2, ((i * 3) + 1) * pos, 1);
+		blocks[i] = derwin(subwindow, 3, max_length, (i * 3) + pos, 1);
 		box(blocks[i], 0, 0);
-		mvwprintw(blocks[i], 0, 2, "%s", title + i  * line_length);
+		mvwprintw(blocks[i], 0, 2, "%s", title + (i * line_length));
 	}
 }
 
@@ -88,10 +89,10 @@ void *ncurses_output() {
 	}
 	
 	// Ползунки 
-	draw_graph_blocks(subwindows, graph_blocks, (char*) blocks_title, 5, 13, 1);
-	mvwprintw(subwindows[1], 17, 1, "HDD/SSD load");
-	whline(subwindows[1], ACS_HLINE, (COLS / 2) - 14);
-	draw_graph_blocks(subwindows, hdd_ssd_blocks, (char*) volumes_info.partitions, volumes_info.partitions_count, 5, 3 * 6);
+	draw_graph_blocks(subwindows[1], graph_blocks, (char*) blocks_title, 5, 13, 1);
+	mvwprintw(subwindows[1], 16, 2, "HDD/SSD load");
+	whline(subwindows[1], ACS_HLINE, (COLS / 2) - 16);
+	draw_graph_blocks(subwindows[1], hdd_ssd_blocks, (char*) volumes_info.partitions, volumes_info.partitions_count, 5, 17);
 
 	ncurses_hw_output(text_blocks[0], 1);
 	wrefresh(subwindows[0]);
@@ -100,6 +101,7 @@ void *ncurses_output() {
 	while(1) {
 		get_sys_info();
 		ncurses_sys_output(text_blocks[1], 1);
+		
 		ncurses_graph_load(graph_blocks[0], sys_info.cpu_load_avg, 10, (COLS / 2) - 3);
 		ncurses_graph_load(graph_blocks[1], sys_info.gpu_used, sys_info.gpu_total, (COLS / 2) - 3);
 		ncurses_graph_load(graph_blocks[2], mem.mem_used, mem.mem_total, (COLS / 2) - 3);				// 
