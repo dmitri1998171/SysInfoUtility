@@ -51,31 +51,22 @@ void hardware_info_output() {
 	for(int i = 0; i < hard_info.net_int_count; i++)	
 		printf("%s ", hard_info.net_int[i]);
 	
-	printf("\nCPU: %s\n", hard_info.cpu);
+	printf("\nCPU: %s", hard_info.cpu);
 	printf("CPU CORES: %i\n", hard_info.cpu_cores);
 	printf("GPU: %s\n", hard_info.gpu);
 	printf("Resolution: %s\n", hard_info.resolution);
 	printf("RAM: %i Mb\n", mem.mem_total);
 	printf("Swap: %i Mb\n", mem.swap_total);
 
-	// Вывод дисков
+	// Вывод разделов диска
 	printf("hdd/ssd:\n");
-	// for(int i = 0; i < volumes_info.volumes_count; i++)	{
-	// 	printf("    * %s ", volumes_info.volumes[i]);
-	// 	if(volumes_info.vol_size[i] < 1024)
-	// 		printf("%.0f / %.0f Mb", volumes_info.vol_free[i], volumes_info.vol_size[i]);
-	// 	else
-	// 		printf("%.1f / %.1f Gb", volumes_info.vol_free[i] / 1024, volumes_info.vol_size[i] / 1024);
-
-		// Вывод разделов диска
-		for(int j = 0; j < volumes_info.partitions_count; j++) {
-			printf("      - %s ", volumes_info.partitions[j]);
-			if(volumes_info.part_size[j] < 1024)
-				printf("%.0f / %.0f Mb\n", volumes_info.part_free[j], volumes_info.part_size[j]);
-			else
-				printf("%.1f / %.1f Gb\n", volumes_info.part_free[j] / 1024, volumes_info.part_size[j] / 1024);
-		}
-	
+	for(int j = 0; j < volumes_info.partitions_count; j++) {
+		printf("      - %s ", volumes_info.partitions[j]);
+		if(volumes_info.part_size[j] < 1024)
+			printf("%.0f / %.0f Mb\n", volumes_info.part_free[j], volumes_info.part_size[j]);
+		else
+			printf("%.1f / %.1f Gb\n", volumes_info.part_free[j] / 1024, volumes_info.part_size[j] / 1024);
+	}
 	printf("\n");
 }
 

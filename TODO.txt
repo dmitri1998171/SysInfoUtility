@@ -1,0 +1,47 @@
+
+        TODO
+
+1) Железо 
+    \/ - версии linux и ядра
+    \/ - network interfaces
+    \/ - cpu   (/proc/cpuinfo)
+    \/ - кол-во процов (cpu cores в proc/cpuinfo)
+    \/ - GPU           (/sys/class/graphics/fb0/name)
+    \/ - Resolution (/sys/class/graphics/fb0/virtual_size)
+    \/ - RAM   (/proc/meminfo)
+    \/ - Swap
+    \/ 5) HDD/SSD (ls -l /dev/ | grep sd) (/proc/partitions)
+        - динам. изм. кол-во дисков/разделов
+        \/ - использ. место
+        - все виды дисков (sda, hda, ...)
+
+\/ 2) Загрузка 
+    \/ - CPU
+     - GPU           (cat /var/log/syslog.1 | grep 'graphics memory') (dmesg | grep 'graphics memory')
+        - used
+        \/ - max
+    \/ - RAM
+    \/ - Swap
+    \/ - temp          (/sys/devices/platform/coretemp.0/hwmon/hwmon5/temp1_input)
+
+\/ 3) Вывод
+    \/ - в log
+    \/ - в HTML
+    \/ - вывод отдельных параметров по аргументам
+
+\/ 4) отправка по интернет
+
+5) граф. режим (ncurses)
+    \/ - текст
+    \/ - кнопки
+    \/ - ползунки
+           \/ - % сбоку
+           \/ - max знач для ползунков
+           \/ - вывод hdd/ssd
+
+
+*) оптимизация
+    - разобраться с таблицой приставок
+        https://habr.com/ru/post/193256/
+    - утечки памяти (valgrind)
+    - оптимизация кода (get_info.c)

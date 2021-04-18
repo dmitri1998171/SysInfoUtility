@@ -4,6 +4,7 @@
 
 void cpu_sys_info() {
 	char str[15];
+	sys_info.cpu_load_avg = 0;
 
 	if ((fp = fopen("/proc/loadavg", "r")) != NULL) {
 		fgets(str, 15, fp);
@@ -17,6 +18,7 @@ void cpu_sys_info() {
 void mem_info() {
 	char str[ARR_SIZE];
 	int value = 0;
+	mem.mem_total, mem.swap_total, mem.mem_used, mem.swap_used = 0;
 
     if ((fp = fopen("/proc/meminfo", "r")) != NULL) {
 		while (fgets(str, ARR_SIZE, fp)) {
@@ -41,6 +43,7 @@ void mem_info() {
 void gpu_sys_info() {
 	char *value;
 	char str[ARR_SIZE];
+	sys_info.gpu_total = 0;
 
 	if ((fp = fopen("/var/log/dmesg", "r")) != NULL) {
 		while (fgets(str, ARR_SIZE, fp)) {
@@ -57,24 +60,23 @@ void cpu_temp_info() {
 	int i = 0;
 	char str[15];
 	char filename[255];
-	
-	while(1) {
-		sprintf(filename,"/sys/devices/platform/coretemp.0/hwmon/hwmon%i/temp1_input",i);
+	sys_info.cpu_temp_avg, sys_info.cpu_temp_max = 0;
+
+	for(int i = 0; i < 10; i++) {
+		sprintf(filename,"/sys/devices/platform/coretemp.0/hwmon/hwmon%i/temp1_input", i);
 		if((fp = fopen(filename, "r")) != NULL) {
 			fgets(str, 15, fp);
 			sys_info.cpu_temp_avg = atoi(str) / 1000;
 			fclose(fp);
 		}
 		
-		sprintf(filename,"/sys/devices/platform/coretemp.0/hwmon/hwmon%i/temp1_max",i);
+		sprintf(filename,"/sys/devices/platform/coretemp.0/hwmon/hwmon%i/temp1_max", i);
 		if((fp = fopen(filename, "r")) != NULL) {
 			fgets(str, 15, fp);
 			sys_info.cpu_temp_max = atoi(str) / 1000;
 			fclose(fp);
 			break;
 		}
-		i++;
-	
 	}
 }
 
@@ -120,6 +122,7 @@ void cpu_hard_info() {
 			if(strstr(str, "model name")) {
 				char *d = parsing(str, ":", 1);
 				strcpy(hard_info.cpu, d);
+				hard_info.cpu[strlen(hard_info.cpu)] = '\0';
 			}
 			if(strstr(str, "cpu cores")) {
 				char *p = parsing(str, ":", 1);
